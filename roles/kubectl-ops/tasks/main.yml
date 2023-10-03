@@ -1,0 +1,31 @@
+---
+# tasks file for kubectl-ops
+
+- name: Get an namespace
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: Namespace
+    name: "{{ check_ns }}"
+    namespace: apigee
+  register: check_ns_data
+  when: "check_ns|length > 0"
+
+- set_fact:
+    check_ns_flag: "{{ true if check_ns_data.resources| length > 0 else false }}"
+  when: "check_ns|length > 0"
+
+- block:
+  - name: kubectl {{operation}}
+    shell: >
+      kubectl {{ operation }} {{ k8s_resource_type }} {{ k8s_resource }} \
+        -n {{ k8s_namespace }} \
+        {{ kubectl_args }}
+    register: kubectl_op
+    when: "not check_ns_flag"
+
+  - debug:
+      msg: "{{ kubectl_op }}"
+    when: "not check_ns_flag"
+  rescue:
+  - debug:
+      msg: "kubectl {{ operation }} failed"

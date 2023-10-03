@@ -1,0 +1,6 @@
+{% macro container_image(url,tag,pullPolicy) %}
+image:
+  url: "{{ url }}"
+  tag: "{{ tag }}"
+  pullPolicy: {{ pullPolicy }}
+{% endmacro %}

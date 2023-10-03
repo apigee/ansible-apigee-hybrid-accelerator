@@ -1,0 +1,10 @@
+apiVersion: apigee.cloud.google.com/v1alpha1
+kind: CassandraDataReplication
+metadata:
+  name: {{ cassandra_data_replication_resource }}
+  namespace: apigee
+spec:
+  organizationRef: {{ apigee_org_cr_name }}
+  force: false
+  source:
+    region: {{ apigee_source_dc }}

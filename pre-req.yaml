@@ -1,0 +1,70 @@
+---
+- hosts: localhost
+  gather_facts: true
+  become: true
+  vars:
+    setup_path: "~"
+    helm_version: v3.12.3
+    gcloud_version: 445.0.0
+    gcloud_source_repo: https://dl.google.com/dl/cloudsdk/channels/rapid/downloads
+    install_helm: false
+    install_pip: false
+    install_gcloud: false
+  environment:
+    CLOUDSDK_CORE_DISABLE_PROMPTS: "1"
+  tasks:
+  - name: Check Distribution
+    set_fact: 
+      distro: "{{ 'linux' if (ansible_system == 'Linux') else 'darwin' }}"
+      helm_arch: "{{ 'amd64' if (ansible_architecture == 'x86_64') else 'arm64' }}"
+      gcloud_arch: "{{ ansible_architecture }}"
+
+  - name: Show Distribution
+    debug: 
+      msg: "{{ distro }} & {{ helm_arch }} & {{gcloud_arch}}"
+
+  - name: Install multi python packages with version specifiers
+    ansible.builtin.pip:
+      name:
+        - requests==2.25.1
+    when: "install_pip"
+
+  - name: Install helm if not exists
+    unarchive:
+      src: "https://get.helm.sh/helm-{{ helm_version }}-{{ distro }}-{{ helm_arch }}.tar.gz"
+      dest: /usr/local/bin
+      extra_opts: "--strip-components=1"
+      owner: root
+      group: root
+      mode: 0755
+      remote_src: true
+    args:
+      creates: /usr/local/bin/helm
+    when: "install_helm"
+
+  - name: Create gcloud-sdk directory
+    file:
+      path: "{{ setup_path }}/google-cloud-sdk"
+      state: directory
+    when: "install_gcloud"
+
+  - name: Extract gcloud archive
+    unarchive:
+      src: "{{gcloud_source_repo}}/google-cloud-cli-{{gcloud_version}}-{{distro}}-{{gcloud_arch}}.tar.gz"
+      dest: "{{ setup_path }}/google-cloud-sdk"
+      remote_src: true
+    when: "install_gcloud"
+
+  - name: Install gcloud-cli
+    shell: >
+      "{{ setup_path }}/google-cloud-sdk/google-cloud-sdk/install.sh"
+    register: command_result
+    when: "install_gcloud"
+
+  - name: ls 
+    shell: >
+      ls $HOME
+    register: ls_result
+    # when: "install_gcloud"
+  - debug: 
+      msg: "{{ ls_result }}"

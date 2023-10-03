@@ -1,0 +1,5 @@
+---
+# defaults file for apigeectl-operations
+setup_path: "~"
+apigeectl_operation: "init"
+apigeectl_args: ""

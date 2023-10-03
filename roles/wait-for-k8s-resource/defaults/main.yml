@@ -1,0 +1,5 @@
+---
+# defaults file for wait-for-k8s-resource
+label_selectors: []
+custom_wait: false
+custom_state: running

@@ -1,0 +1,42 @@
+---
+# tasks file for enable-apigee-synchronizer
+- name: Get Gcloud oAuth Token
+  shell: gcloud auth print-access-token
+  register: access_token
+
+- name: Get Synchronizer Status
+  ansible.builtin.uri:
+    url: "https://apigee.googleapis.com/v1/organizations/{{ overrides.gcp.projectID }}:getSyncAuthorization"
+    method: POST
+    return_content: true
+    headers:
+      Content-Type: application/json
+      Authorization: Bearer {{ access_token.stdout }}
+  register: synchronizer_status
+
+- name: Check Synchronizer Status
+  set_fact:
+    sync_identity: "{{ (synchronizer_status.json.identities[0] if ('identities' in synchronizer_status.json) else 'serviceAccount:') | split(':') }}"
+
+- name: Get Synchronizer Service Account
+  set_fact: 
+    synchronizer_service_account: "{{ synchronizer_prod_svc_account if (deployment_environment == 'prod') else synchronizer_non_prod_svc_account }}@{{ overrides.gcp.projectID }}.iam.gserviceaccount.com"
+
+- name: Enable Synchronizer
+  ansible.builtin.uri:
+    url: "https://apigee.googleapis.com/v1/organizations/{{ overrides.gcp.projectID }}:setSyncAuthorization"
+    method: POST
+    body_format: json
+    status_code: [200, 201]
+    return_content: true
+    headers:
+      Content-Type: application/json
+      Authorization: Bearer {{ access_token.stdout }}
+    body: "{\"identities\":[ \"serviceAccount:{{ synchronizer_service_account }}\"]}"
+  register: synchronizer_register
+  when: "sync_identity.1 != synchronizer_service_account"
+
+- name: Check Synchronizer Status
+  debug:
+    msg: "{{ synchronizer_register }}"
+  when: "sync_identity.1 != synchronizer_service_account"

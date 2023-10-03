@@ -1,0 +1,24 @@
+---
+# tasks file for cert-manager
+- name: Download cert-manager
+  uri:
+    url: https://github.com/jetstack/cert-manager/releases/download/{{ cert_manager_version }}/cert-manager.yaml
+    dest: "{{ setup_path }}/cert-manager.yaml"
+
+- name: Apply cert-manager manifest to the cluster.
+  kubernetes.core.k8s:
+    state: "{{cert_manager_status}}"
+    src: "{{ setup_path }}/cert-manager.yaml"
+
+- name: Wait for cert-manager to be up.
+  kubernetes.core.k8s_info:
+    kind: Pod
+    wait: yes
+    label_selectors:
+      - "app.kubernetes.io/instance=cert-manager"
+    namespace: cert-manager
+    wait_timeout: 90
+    wait_condition:
+      type: Ready
+      status: True
+  when: "cert_manager_status == 'present'"

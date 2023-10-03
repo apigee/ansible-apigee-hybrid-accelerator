@@ -1,0 +1,62 @@
+---
+# tasks file for apigeectl-setup
+- name: Check Distribution
+  set_fact: 
+    distro: "{{ 'linux' if (ansible_system == 'Linux') else 'mac' }}"
+
+- name: Show Distribution
+  debug: 
+    var: distro
+
+- name: Force re-create apigeectl
+  file:
+    state: absent
+    path: "{{ setup_path }}/{{ item }}"
+  when: apigeectl_recreate == 'true'
+  with_items:
+    - apigeectl.tar.gz
+    - apigeectl
+    - hybrid-files
+
+- name: Download apigeectl bundle
+  uri:
+    url: https://storage.googleapis.com/apigee-release/hybrid/apigee-hybrid-setup/{{ apigeectl_version }}/apigeectl_{{ distro }}_64.tar.gz
+    dest: "{{ setup_path }}/apigeectl.tar.gz"
+    status_code: [200, 304]
+
+- name: Extract apigeectl bundle
+  unarchive:
+    src: "{{ setup_path }}/apigeectl.tar.gz"
+    dest: "{{ setup_path }}"
+    remote_src: yes
+
+- name: Move apigeectl folder block
+  block:
+  - name: Move apigeectl folder
+    shell: >
+      mv {{ setup_path }}/apigeectl_* {{ setup_path }}/apigeectl
+    register: command_result
+  rescue:
+  - name: catch renaming folder error
+    debug:
+      msg: "Continuing as Directory {{ setup_path }}/apigeectl exists"
+    failed_when: "'Directory not empty' not in command_result.stderr"
+
+- name: Create hybrid-files
+  file:
+    path: "{{ setup_path }}/hybrid-files/{{ item }}"
+    state: directory
+  with_items:
+    - overrides
+    - certs
+
+- name: Create a symbolic links
+  file:
+    src: "{{ setup_path }}/apigeectl/{{ item }}"
+    dest: "{{ setup_path }}/hybrid-files/{{ item }}"
+    state: link
+  with_items:
+    - tools
+    - config
+    - templates
+    - plugins

@@ -1,0 +1,6 @@
+---
+# defaults file for kubeconfig-setup
+platform: gke # gke, others
+gke_cluster: "cluster-1"
+gke_region: "asia-south2"
+gke_project_id: "shared-sabre-wolverine"

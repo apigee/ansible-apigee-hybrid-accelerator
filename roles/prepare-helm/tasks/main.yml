@@ -1,0 +1,35 @@
+---
+# tasks file for prepare-helm
+
+- name: Create helm directory
+  file:
+    path: "{{ setup_path }}/helm"
+    state: directory
+
+
+- name: Find "{{ setup_path }}/helm" all directories
+  find:
+    paths: "{{ setup_path }}/helm"
+    recurse: no
+    file_type: directory
+  register: helm_chart_dirs
+
+- set_fact:
+    helm_chart_dirs_list: "{{ helm_chart_dirs| json_query('files[*].path')}}"
+    helm_chart_dirs_filtered_list: []
+
+- set_fact:
+    helm_chart_dirs_filtered_list: "{{ helm_chart_dirs_filtered_list + [ item|basename ] }}"
+  with_items: "{{ helm_chart_dirs_list }}"
+
+- debug:
+    msg: "{{ helm_chart_dirs_filtered_list }}"
+
+- name: Download chart using chart url
+  kubernetes.core.helm_pull:
+    chart_ref: "{{ helm_chart_repo }}/{{ item }}"
+    chart_version: "{{ helm_chart_version }}"
+    destination: "{{ setup_path }}/helm"
+    untar_chart: yes
+  with_items: "{{ helm_charts }}"
+  when: "item not in helm_chart_dirs_filtered_list"

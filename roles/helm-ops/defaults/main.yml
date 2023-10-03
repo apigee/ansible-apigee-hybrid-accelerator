@@ -1,0 +1,9 @@
+---
+# defaults file for helm-ops
+setup_path: "~"
+custom_values: false
+loop_values: false
+set_values: []
+release_namespace: apigee
+create_namespace: false
+release_state: present

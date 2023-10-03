@@ -1,0 +1,24 @@
+---
+# tasks file for bootstrap-apigee-crds
+- name: Dry-run (apply)
+  shell: >
+    kubectl apply -k \
+    {{setup_path}}/helm/apigee-operator/etc/crds/default/ \
+    --server-side \
+    --force-conflicts \
+    --validate=false
+  async: 1000
+  poll: 0
+  register: kubectl_response
+
+- name: Wait for kubectl operation to finish
+  ansible.builtin.async_status:
+    jid: '{{ kubectl_response.ansible_job_id }}'
+  register: kubectl_job_result
+  until: kubectl_job_result.finished
+  retries: 100
+  delay: 10
+
+- name: Check kubectl operation output
+  debug:
+    msg: "{{ kubectl_job_result }}"

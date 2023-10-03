@@ -1,0 +1,247 @@
+{% from 'images.j2' import container_image %}
+{% from 'service_account.j2' import svc_account %}
+namespace: apigee
+gcp:
+  region: {{ overrides.gcp.region }}
+  projectID: {{ overrides.gcp.projectID }}
+
+org: {{ overrides.gcp.projectID }}
+revision: {{ overrides.revision }}
+
+k8sCluster:
+  name: {{ overrides.k8sCluster.name }}
+  region: "{{ overrides.k8sCluster.region }}"
+
+instanceID: "{{ overrides.instanceID }}"
+
+{% if overrides.imagePullSecrets -%}
+imagePullSecrets:
+- name: {{ overrides.imagePullSecrets }}
+{%- endif %}
+
+
+{% if overrides.nodeSelector.requiredForScheduling != "" -%}
+nodeSelector:
+  requiredForScheduling: {{ overrides.nodeSelector.requiredForScheduling|default('false',true) }}
+  apigeeRuntime:
+    key: "{{ overrides.nodeSelector.apigeeRuntime.key|default('gke-nodepool') }}"
+    value: "{{ overrides.nodeSelector.apigeeRuntime.value|default('runtime') }}"
+  apigeeData:
+    key: "{{ overrides.nodeSelector.apigeeData.key|default('gke-nodepool') }}"
+    value: "{{ overrides.nodeSelector.apigeeData.value|default('data') }}"
+{%- endif %}
+
+# This configuration is introduced in hybrid v1.8
+ingressGateways:
+- name: ingress # maximum 17 characters. See Known issue 243167389.
+  replicaCountMin: 2
+  replicaCountMax: 10
+
+virtualhosts:
+{% for vhost_data in overrides.virtualhosts -%}
+- name: {{ vhost_data.name }}
+  sslSecret: {{ vhost_data.sslSecret if vhost_data.sslSecret else vhost_data.name+"-ssl-secret" }}
+  selector:
+  {% macro virtualhosts_selector() %}
+  {% if vhost_data.get('selector') -%}
+  {% for k,v in vhost_data.get('selector').items() -%}
+  {{k}}: {{ v }}
+  {% endfor %}
+  {% else %}
+  app: apigee-ingressgateway
+  {%- endif %}
+  {% endmacro %}
+{{ virtualhosts_selector()|indent( width=4) }}
+
+{% macro virtualhosts() %}
+{% if vhost_data.tlsMode|default('SIMPLE') == 'MUTUAL' -%}
+  tlsMode: MUTUAL
+{%- endif %}
+{% endmacro %}
+{{ virtualhosts()|indent( width=2) }}
+{% endfor %}
+
+envs:
+{% for each_env in overrides.envs -%}
+- name: {{ each_env.name }}
+  components:
+    synchronizer:
+      replicaCountMax: {{ each_env.get('synchronizer',{}).get('replicaCountMax',{}) if each_env.get('synchronizer',{}).get('replicaCountMax',{}) else '' }}
+      replicaCountMin: {{ each_env.get('synchronizer',{}).get('replicaCountMin',{}) if each_env.get('synchronizer',{}).get('replicaCountMin',{}) else '' }}
+    udca:
+      replicaCountMax: {{ each_env.get('udca',{}).get('replicaCountMax',{}) if each_env.get('udca',{}).get('replicaCountMax',{}) else '' }}
+      replicaCountMin: {{ each_env.get('udca',{}).get('replicaCountMin',{}) if each_env.get('udca',{}).get('replicaCountMin',{}) else '' }}
+    runtime:
+      replicaCountMax: {{ each_env.get('runtime',{}).get('replicaCountMax',{}) if each_env.get('runtime',{}).get('replicaCountMax',{}) else '' }}
+      replicaCountMin: {{ each_env.get('runtime',{}).get('replicaCountMin',{}) if each_env.get('runtime',{}).get('replicaCountMin',{}) else '' }}
+  serviceAccountPaths:
+    synchronizer:
+  serviceAccountSecretRefs:
+    synchronizer: {{ svc_account(create_service_account, deployment_environment,'synchronizer', overrides.synchronizer.serviceAccountRef) | indent( width=4)}}
+    udca: {{ svc_account(create_service_account, deployment_environment,'udca', overrides.udca.serviceAccountRef) | indent( width=4)}}
+    runtime: {{ svc_account(create_service_account, deployment_environment,'runtime', overrides.runtime.serviceAccountRef) | indent( width=4)}}
+{% endfor %}
+
+mart:
+  {{ container_image(overrides.mart.image.url,overrides.mart.image.tag,overrides.mart.image.pullPolicy,) | indent( width=2)}}
+  serviceAccountRef: {{ svc_account(create_service_account, deployment_environment,'mart', overrides.mart.serviceAccountRef) | indent( width=2)}}
+  replicaCountMax: {{ overrides.mart.replicaCountMax }}
+  replicaCountMin: {{ overrides.mart.replicaCountMax }}
+  resources:  
+    requests:
+      cpu: {{ overrides.mart.resources.requests.cpu }}
+      memory: {{ overrides.mart.resources.requests.memory }}
+
+synchronizer:
+  replicaCountMax: {{ overrides.synchronizer.replicaCountMax }}
+  replicaCountMin: {{ overrides.synchronizer.replicaCountMin }}
+  serviceAccountRef: {{ svc_account(create_service_account, deployment_environment,'synchronizer', overrides.synchronizer.serviceAccountRef) | indent( width=2)}}
+  resources:  
+    requests:
+      cpu: {{ overrides.synchronizer.resources.requests.cpu }}
+      memory: {{ overrides.synchronizer.resources.requests.cpu }}
+  {{ container_image(overrides.synchronizer.image.url,overrides.synchronizer.image.tag,overrides.synchronizer.image.pullPolicy,) | indent( width=2)}}
+
+runtime:
+  replicaCountMax: {{ overrides.runtime.replicaCountMax }}
+  replicaCountMin: {{ overrides.runtime.replicaCountMin }}
+  serviceAccountRef: {{ svc_account(create_service_account, deployment_environment,'runtime', overrides.runtime.serviceAccountRef) | indent( width=2)}}
+  resources:
+    requests:
+      cpu: {{ overrides.runtime.resources.requests.cpu }}
+      memory: {{ overrides.runtime.resources.requests.cpu }}
+  {{ container_image(overrides.runtime.image.url,overrides.runtime.image.tag,overrides.runtime.image.pullPolicy,) | indent( width=2)}}
+
+cassandra:
+  {% if cassandra_seed_host|default('',true) != '' -%}
+  multiRegionSeedHost: {{ cassandra_seed_host }}
+  {%- endif %}
+
+  datacenter: "{{ cassandra_dc }}"
+  replicaCount: {{ overrides.cassandra.replicaCount }}
+  hostNetwork: {{ overrides.cassandra.hostNetwork }}
+  resources:
+    requests:
+      cpu: {{ overrides.cassandra.resources.requests.cpu }}
+      memory: {{ overrides.cassandra.resources.requests.memory }}
+  maxHeapSize: {{ overrides.cassandra.maxHeapSize }}
+  heapNewSize: {{ overrides.cassandra.heapNewSize }}
+  storage:
+    capacity: {{ overrides.cassandra.storage.capacity }}
+    storageclass: {{ overrides.cassandra.storage.storageclass }}
+  readinessProbe:
+    timeoutSeconds: 60
+    successThreshold: 2
+    failureThreshold: 2
+    periodSeconds: 10
+    initialDelaySeconds: 20 
+  {% if overrides.cassandra.auth.secret|default('',true) != '' -%}
+  auth:
+    secret: {{ overrides.cassandra.auth.secret }}
+    {{ container_image(overrides.cassandra.auth.image.url,overrides.cassandra.auth.image.tag,overrides.cassandra.auth.image.pullPolicy,) | indent( width=2)}}
+  {%- endif %}
+
+  {{ container_image(overrides.cassandra.image.url,overrides.cassandra.image.tag,overrides.cassandra.image.pullPolicy,) | indent( width=2)}}
+  backup:
+    enabled: {{ overrides.cassandra.backup.enabled }}
+    dbStorageBucket: {{ overrides.cassandra.backup.dbStorageBucket }}
+    serviceAccountRef: {{ svc_account(create_service_account, deployment_environment,'cassandra', overrides.cassandra.backup.serviceAccountRef) | indent( width=4)}}
+    schedule: {{ overrides.cassandra.backup.schedule }}
+    {{ container_image(overrides.cassandra.backup.image.url,overrides.cassandra.backup.image.tag,overrides.cassandra.backup.image.pullPolicy,) | indent( width=4)}}
+  restore:
+    enabled: {{ overrides.cassandra.restore.enabled }}
+    dbStorageBucket: {{ overrides.cassandra.restore.dbStorageBucket }}
+    serviceAccountRef: {{ svc_account(create_service_account, deployment_environment,'cassandra', overrides.cassandra.restore.serviceAccountRef) | indent( width=4)}}
+    snapshotTimestamp: {{ overrides.cassandra.restore.snapshotTimestamp }}
+    {{ container_image(overrides.cassandra.restore.image.url,overrides.cassandra.restore.image.tag,overrides.cassandra.restore.image.pullPolicy,) | indent( width=4)}}
+
+udca:
+  replicaCountMax: {{ overrides.udca.replicaCountMax }}
+  replicaCountMin: {{ overrides.udca.replicaCountMin }}
+  resources:
+    requests:
+      cpu: {{ overrides.udca.resources.requests.cpu }}
+  {{ container_image(overrides.udca.image.url,overrides.udca.image.tag,overrides.udca.image.pullPolicy,) | indent( width=2)}}
+  serviceAccountRef: {{ svc_account(create_service_account, deployment_environment,'udca', overrides.udca.serviceAccountRef) | indent( width=2)}}
+  fluentd:
+    {{ container_image(overrides.udca.fluentd.image.url,overrides.udca.fluentd.image.tag,overrides.udca.fluentd.image.pullPolicy,) | indent( width=4)}}
+    resources:
+      limits:
+        memory: {{ overrides.udca.fluentd.resources.limits.memory }}
+      requests:
+        cpu: {{ overrides.udca.fluentd.resources.requests.cpu }}
+        memory: {{ overrides.udca.fluentd.resources.requests.memory }}
+
+logger:
+  enabled: {{ overrides.logger.enabled }}
+  {{ container_image(overrides.logger.image.url,overrides.logger.image.tag,overrides.logger.image.pullPolicy,) | indent( width=2)}}
+  serviceAccountRef: {{ svc_account(create_service_account, deployment_environment,'logger', overrides.logger.serviceAccountRef) | indent( width=2)}}
+  resources:
+    requests:
+      cpu: {{ overrides.logger.resources.requests.cpu }}
+      memory: {{ overrides.logger.resources.requests.memory }}
+  {% if overrides.logger.proxyURL|default('',true) != '' -%}
+  proxyURL: {{ overrides.logger.proxyURL }}
+  {%- endif %}
+
+metrics:
+  prometheus:
+    {{ container_image(overrides.metrics.prometheus.image.url,overrides.metrics.prometheus.image.tag,overrides.metrics.prometheus.image.pullPolicy,) | indent( width=4)}}
+  sdSidecar:
+    {{ container_image(overrides.metrics.sdSidecar.image.url,overrides.metrics.sdSidecar.image.tag,overrides.metrics.sdSidecar.image.pullPolicy,) | indent( width=4)}}
+  serviceAccountRef: {{ svc_account(create_service_account, deployment_environment,'metrics', overrides.metrics.serviceAccountRef) | indent( width=2)}}
+  {% if overrides.logger.metrics|default('',true) != '' -%}
+  proxyURL: {{ overrides.metrics.proxyURL }}
+  {%- endif %}
+
+connectAgent:
+  replicaCountMax: {{ overrides.connectAgent.replicaCountMax }}
+  replicaCountMin: {{ overrides.connectAgent.replicaCountMin }}
+  serviceAccountRef: {{ svc_account(create_service_account, deployment_environment,'mart', overrides.mart.serviceAccountRef) | indent( width=2)}}
+  {{ container_image(overrides.connectAgent.image.url,overrides.connectAgent.image.tag,overrides.connectAgent.image.pullPolicy,) | indent( width=2)}}
+  resources:
+    requests:
+      cpu: {{ overrides.connectAgent.resources.requests.cpu }}
+      memory: {{ overrides.connectAgent.resources.requests.memory }}
+
+watcher:
+  replicaCountMax: {{ overrides.watcher.replicaCountMax }}
+  replicaCountMin: {{ overrides.watcher.replicaCountMin }}
+  {{ container_image(overrides.watcher.image.url,overrides.watcher.image.tag,overrides.watcher.image.pullPolicy,) | indent( width=2)}}
+  serviceAccountRef: {{ svc_account(create_service_account, deployment_environment,'watcher', overrides.watcher.serviceAccountRef) | indent( width=2)}}
+  resources:
+    requests:
+      cpu: {{ overrides.watcher.resources.requests.cpu }}
+      memory: {{ overrides.watcher.resources.requests.memory }}
+
+redis:
+  replicaCount: {{ overrides.redis.replicaCount }}
+  {{ container_image(overrides.redis.image.url,overrides.redis.image.tag,overrides.redis.image.pullPolicy,) | indent( width=2)}}
+  envoy:
+    replicaCountMax: {{ overrides.redis.envoy.replicaCountMax }}
+    replicaCountMin: {{ overrides.redis.envoy.replicaCountMin }}
+    {{ container_image(overrides.redis.envoy.image.url,overrides.redis.envoy.image.tag,overrides.redis.envoy.image.pullPolicy,) | indent( width=4)}}
+    resources:
+      requests:
+        cpu: {{ overrides.redis.envoy.resources.requests.cpu }}
+  resources:
+    requests:
+      cpu: {{ overrides.redis.resources.requests.cpu }}
+
+ao:
+  args:
+    # This configuration is introduced in hybrid v1.8
+    disableIstioConfigInAPIServer: true
+  {{ container_image(overrides.ao.image.url,overrides.ao.image.tag,overrides.ao.image.pullPolicy,) | indent( width=2)}}
+  installer:
+    {{ container_image(overrides.ao.installer.image.url,overrides.ao.installer.image.tag,overrides.ao.installer.image.pullPolicy,) | indent( width=4)}}
+  resources:
+    requests:
+      cpu: {{ overrides.ao.resources.requests.cpu }}
+      memory: {{ overrides.ao.resources.requests.memory }}
+    limits:
+      cpu: {{ overrides.ao.resources.limits.cpu }}
+      memory: {{ overrides.ao.resources.limits.memory }}
+
+kubeRBACProxy:
+  {{ container_image(overrides.kubeRBACProxy.image.url,overrides.kubeRBACProxy.image.tag,overrides.kubeRBACProxy.image.pullPolicy,) | indent( width=2)}}

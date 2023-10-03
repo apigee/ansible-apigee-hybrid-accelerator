@@ -1,0 +1,27 @@
+---
+# tasks file for helm-ops
+- name: Deploy {{ chart_ref }} 
+  kubernetes.core.helm:
+    name: "{{ release_name }}"
+    chart_ref: "{{ setup_path }}/helm/{{ chart_ref }}"
+    release_namespace: "{{ release_namespace }}"
+    release_state: "{{ release_state }}"
+    atomic: true
+    create_namespace: "{{ create_namespace }}"
+    values_files:
+      - "{{ setup_path }}/overrides_{{ cassandra_dc }}.yaml"
+    # set_values: "{{ set_values }}"
+  when: "not custom_values"
+
+- name: Deploy {{ chart_ref }} with custom_values
+  kubernetes.core.helm:
+    name: "{{ release_name }}"
+    chart_ref: "{{ setup_path }}/helm/{{ chart_ref }}"
+    release_namespace: "{{ release_namespace }}"
+    release_state: "{{ release_state }}"
+    atomic: true
+    create_namespace: "{{ create_namespace }}"
+    values_files:
+      - "{{ setup_path }}/overrides_{{ cassandra_dc }}.yaml"
+    set_values: "{{ set_values }}"
+  when: "custom_values"

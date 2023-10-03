@@ -1,0 +1,6 @@
+---
+# tasks file for apigee-hybrid-overrides
+- name: Create overrides.yaml
+  template:
+    src: templates/overrides.yaml.j2
+    dest: "{{ setup_path }}/overrides_{{ cassandra_dc }}.yaml"

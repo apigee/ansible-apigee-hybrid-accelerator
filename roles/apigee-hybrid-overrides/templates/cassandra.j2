@@ -1,0 +1,7 @@
+{% macro cass_multi_dc() %}
+{% if second_region  -%}
+{% if cassandra_seed_host != '' -%}
+  multiRegionSeedHost: {{ cassandra_seed_host }}
+{%- endif %}
+{%- endif %}
+{% endmacro %}

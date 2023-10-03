@@ -1,0 +1,22 @@
+---
+# tasks file for apigeectl-operations
+- name: Install the Apigee deployment services Apigee Deployment Controller and Apigee Admission Webhook.
+  shell: >
+    {{ setup_path }}/apigeectl/apigeectl {{ apigeectl_operation }} -f overrides/overrides.yaml {{ apigeectl_args }}
+  args:
+    chdir: "{{ setup_path }}/hybrid-files"
+  async: 1000
+  poll: 0
+  register: apigeectl_response
+
+- name: Wait for Apigeectl operation to finish
+  ansible.builtin.async_status:
+    jid: '{{ apigeectl_response.ansible_job_id }}'
+  register: job_result
+  until: job_result.finished
+  retries: 100
+  delay: 10
+
+- name: Check Apigeectl operation output
+  debug:
+    msg: "{{ job_result }}"

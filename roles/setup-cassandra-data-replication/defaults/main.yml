@@ -1,0 +1,8 @@
+---
+# defaults file for setup-cassandra-data-replication
+apigee_org_crd_api_version: apigee.cloud.google.com/v1alpha2
+apigee_ds_crd_api_version: apigee.cloud.google.com/v1alpha1
+apigee_source_dc: dc-1
+apigee_org_cr_name: ''
+cassandra_data_replication_resource: cassandra-data-replication
+cassandra_data_replication_yaml: datareplication.yaml

@@ -1,0 +1,19 @@
+---
+# tasks file for get-cassandra-seed
+- name: Search for Cassandra Pod 
+  kubernetes.core.k8s_info:
+    kind: Pod
+    namespace: apigee
+    label_selectors:
+      - app=apigee-cassandra
+      - statefulset.kubernetes.io/pod-name=apigee-cassandra-default-0
+    kubeconfig: "{{ kubeconfig }}"
+  register: cassandra_data
+
+- name: Example using fail and when together
+  fail:
+    msg: "No Cassandra Pods  with label app=apigee-cassandra found in apigee namespace "
+  when: "cassandra_data.resources| length == 0"
+
+- set_fact:
+    cassandra_seed_data: "{{ cassandra_data.resources[0].status.podIP }}"

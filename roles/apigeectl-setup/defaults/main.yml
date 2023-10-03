@@ -1,0 +1,5 @@
+---
+# defaults file for apigeectl-setup
+setup_path: "~"
+apigeectl_version: 1.10.3
+apigeectl_recreate: false

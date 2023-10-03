@@ -1,0 +1,10 @@
+---
+# defaults file for validate-api-calls
+setup_path: "~"
+internet_access: true
+validate_api_redeploy: false
+internet_apis:
+- mock
+- mock-internal
+internal_apis:
+- mock-internal

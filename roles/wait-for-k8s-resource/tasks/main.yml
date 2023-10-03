@@ -1,0 +1,37 @@
+---
+# tasks file for wait-for-k8s-resource
+- name: wait-for-k8s-resource
+  kubernetes.core.k8s_info:
+    api_version: "{{ k8s_api_version }}"
+    kind: "{{ k8s_kind }}"
+    namespace: "{{ k8s_namespace }}"
+    name: "{{ k8s_resource_name }}"
+    wait: true
+    label_selectors: "{{ label_selectors }}"
+    wait_timeout: 600
+  register: wait_for_resource
+  when: "not custom_wait"
+
+- debug:
+    msg: "{{ wait_for_resource }}"
+  when: "not custom_wait"
+
+
+- name: wait-for-k8s-resource-custom
+  kubernetes.core.k8s_info:
+    api_version: "{{ k8s_api_version }}"
+    kind: "{{ k8s_kind }}"
+    namespace: "{{ k8s_namespace }}"
+    name: "{{ k8s_resource_name }}"
+    wait: true
+    label_selectors: "{{ label_selectors }}"
+    wait_timeout: 600
+  register: wait_for_resource_custom
+  until: "('status' in wait_for_resource_custom.resources[0]) and (wait_for_resource_custom.resources[0].status.state == '{{custom_state}}')"
+  retries: 60
+  delay: 10
+  when: "custom_wait"
+
+- debug:
+    msg: "{{ wait_for_resource_custom }}"
+  when: "custom_wait"

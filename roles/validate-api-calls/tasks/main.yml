@@ -1,0 +1,152 @@
+---
+# tasks file for validate-api-calls
+
+- name: Create proxy-bundles directory
+  file:
+    path: "{{ setup_path }}/proxy-bundles"
+    state: directory
+
+- name: set proxy bundle
+  set_fact: 
+    proxy_bundle_path: "{{ internet_apis if (internet_access) else internal_apis }}"
+
+- name: Compress directory
+  community.general.archive:
+    path: "{{ role_path }}/files/{{ item }}/apiproxy"
+    dest: "{{ setup_path }}/proxy-bundles/{{ item }}.zip"
+    format: zip
+  with_items: "{{ proxy_bundle_path }}"
+
+- name: Get Gcloud oAuth Token
+  shell: gcloud auth print-access-token
+  register: access_token
+
+
+- name: set apigee_env_group
+  set_fact: 
+    apigee_env_group: "{{ overrides.virtualhosts[0].name }}"
+  failed_when: overrides.virtualhosts|length == 0
+
+- name: Get Env Group attachments
+  uri:
+    url: "https://apigee.googleapis.com/v1/organizations/{{ overrides.gcp.projectID }}/envgroups/{{ apigee_env_group }}/attachments"
+    method: GET
+    return_content: true
+    headers:
+      Content-Type: application/json
+      Authorization: Bearer {{ access_token.stdout }}
+  register: envgroup_attachements
+
+- name: Example using fail and when together
+  fail:
+    msg: "No Environments attached to env group {{ apigee_env_group }}"
+  when: "'environmentGroupAttachments' not in envgroup_attachements.json"
+
+- name: Set Apigee Env Name
+  set_fact:
+    apigee_env: "{{ envgroup_attachements.json['environmentGroupAttachments'][0]['environment'] }}"
+
+- debug:
+    msg: "{{ apigee_env }}"
+
+- name: execute install script
+  script: |
+    deploy_api.py \
+      --project_id {{ overrides.gcp.projectID }} \
+      --env {{ apigee_env }} \
+      --api_name {{ item }} \
+      --api_bundle_path {{ setup_path }}/proxy-bundles/{{ item }}.zip \
+      --access_token {{ access_token.stdout }} \
+      {{ '--api_redeploy'  if validate_api_redeploy else ''}}
+  register: deploy_api_response
+  with_items: "{{ proxy_bundle_path }}"
+
+
+- name: Check deploy_api operation output
+  debug:
+    msg: "{{ deploy_api_response }}"
+
+- name: Get Env Group hostname
+  uri:
+    url: "https://apigee.googleapis.com/v1/organizations/{{ overrides.gcp.projectID }}/envgroups/{{ apigee_env_group }}"
+    method: GET
+    return_content: true
+    headers:
+      Content-Type: application/json
+      Authorization: Bearer {{ access_token.stdout }}
+  register: envgroup_details
+
+
+- name: Example using fail and when together
+  fail:
+    msg: "No hostnames in env group {{ apigee_env_group }}"
+  when: "envgroup_details.json.hostnames| length == 0"
+
+- name: Set Env Group host
+  set_fact:
+    apigee_envgroup_host: "{{ envgroup_details.json['hostnames'][0] }}"
+
+- shell: if [[ $(kubectl get services -n apigee -l ingress_name=ingress -o jsonpath='{.items[0].status.loadBalancer.ingress[0]}') ]]; then exit 0; else exit 1; fi;
+  register: wait_for_ext_ip
+  until: wait_for_ext_ip.rc == 0
+  retries: 10
+  delay: 5
+
+- name: Search for ingress service
+  kubernetes.core.k8s_info:
+    kind: Service
+    namespace: apigee
+    label_selectors:
+      - ingress_name=ingress
+  register: ingress_data
+
+- name: Example using fail and when together
+  fail:
+    msg: "No services with label ingress_name=ingress found in apigee namespace "
+  when: "ingress_data.resources| length == 0"
+
+- name: Set Env Group host
+  set_fact:
+    apigee_api_host: "{{ ingress_data.resources[0]['status']['loadBalancer']['ingress'][0]['ip'] }}"
+  failed_when: "'ingress' not in ingress_data.resources[0]['status']['loadBalancer']"
+
+- debug: 
+    msg: "{{ apigee_api_host }}"
+
+- name: execute install script
+  script: |
+    /usr/bin/yes | \
+      /usr/bin/curl \
+      --fail-with-body \
+      --connect-to "{{ apigee_envgroup_host }}:443:{{ apigee_api_host }}" \
+      --output /dev/null \
+      --silent -k \
+      --write-out "%{http_code}" \
+      "https://{{ apigee_envgroup_host }}/mock"
+  register: validate_api_response
+  when: "internet_access"
+  until: "validate_api_response.rc == 0"
+  retries: 20
+  delay: 10
+
+- debug:
+    msg: "{{ validate_api_response }} "
+  when: "internet_access"
+
+- name: execute install script
+  script: |
+    /usr/bin/yes | \
+      /usr/bin/curl \
+      --fail-with-body \
+      --connect-to "{{ apigee_envgroup_host }}:443:{{ apigee_api_host }}" \
+      --output /dev/null \
+      --silent -k \
+      --write-out "%{http_code}" \
+      "https://{{ apigee_envgroup_host }}/mock-internal"
+  register: validate_api_response_int
+  until: "validate_api_response_int.rc == 0"
+  retries: 20
+  delay: 10
+
+- debug: 
+    msg: "{{ validate_api_response_int }} "

@@ -1,0 +1,29 @@
+---
+# tasks file for setup-cassandra-data-replication
+- name: Get existing Apigee org
+  kubernetes.core.k8s_info:
+    api_version: "{{ apigee_org_crd_api_version }}"
+    kind: ApigeeOrganization
+    namespace: apigee
+    kubeconfig: "{{ kubeconfig }}"
+  register: apigee_orgs
+
+- fail:
+    msg: "No ApigeeOrganization resources found"
+  when: "{{ apigee_orgs.resources|length == 0 }}"
+
+- set_fact:
+    apigee_org_cr_name: "{{ apigee_orgs.resources[0].metadata.name }}"
+
+- debug:
+    msg: "{{ apigee_org_cr_name }}"
+
+- name: Create cassandra_data_replication_yaml
+  template:
+    src: templates/datareplication.j2
+    dest: "{{ setup_path }}/{{ cassandra_data_replication_yaml }}"
+  
+- name: Apply cassandra_data_replication_yaml
+  kubernetes.core.k8s:
+    state: present
+    src: "{{ setup_path }}/{{ cassandra_data_replication_yaml }}"

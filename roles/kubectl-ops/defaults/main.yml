@@ -1,0 +1,8 @@
+---
+# defaults file for kubectl-ops
+k8s_namespace: default
+k8s_resource_type: ''
+k8s_resource: ''
+kubectl_args: ''
+check_ns: ''
+check_ns_flag: false

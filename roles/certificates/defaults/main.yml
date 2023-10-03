@@ -1,0 +1,21 @@
+---
+# defaults file for certificates
+setup_path: "~"
+generate_certificates: true
+clone_certificates: false
+# cert_cn: "apigee.com"
+# tls_namespace: apigee
+# apigee_envgroups: {
+#   "dev" : {
+#     hostnames: ["dev.apigee.com","dev1.apigee.com","dev2.apigee.com"],
+#     mtls: "false"
+#   },
+#   "test" : {
+#     hostnames: ["test.apigee.com","test1.apigee.com"],
+#     mtls: "false"
+#   },
+#   "prod" : {
+#     hostnames: ["prod.apigee.com"],
+#     mtls: "false"
+#   }
+# }

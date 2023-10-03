@@ -1,0 +1,8 @@
+---
+# tasks file for kubeconfig-setup
+- name: Get cluster credentials
+  shell: >
+    gcloud container clusters get-credentials {{ gke_cluster }} \
+    --region {{ gke_region }} \
+    --project {{ gke_project_id }} \
+  when: platform == "gke"

@@ -1,0 +1,186 @@
+---
+- name: Setup Apigee Hybrid primary DC
+  hosts: all
+  environment:
+    USE_GKE_GCLOUD_AUTH_PLUGIN: "true"
+    HELM_EXPERIMENTAL_OCI: "1"
+    KUBECONFIG: "{{ kubeconfigs.primary }}"
+  vars:
+    cassandra_dc: dc-1
+  tags:
+  - dc1
+  roles:
+  - { role: cert-manager, tags: ['cert-manager'] }
+  - { role: certificates, vars: { generate_certificates: true }, tags: ['certs'] }
+  - { role: prepare-helm, tags: ['prepare-helm'] }
+  - { role: prepare-service-accounts, tags: ['prepare-service-accounts'] }
+  - { role: enable-apigee-synchronizer, tags: ['enable-synchronizer'] }
+  - { role: bootstrap-apigee-crds, tags: ['bootstrap-apigee-crds'] }
+  - { role: apigee-hybrid-overrides, tags: ['generate-overrides'] }
+  - { role: helm-ops, vars: { release_name: 'operator', chart_ref: 'apigee-operator', release_namespace: 'apigee-system', create_namespace: true}, tags: ['ao'] }
+  - { role: wait-for-k8s-resource, vars: { k8s_api_version: v1, k8s_kind: Deployment, k8s_namespace: apigee-system, k8s_resource_name: apigee-controller-manager}, tags: ['ao','wait_ao'] }
+  - { role: helm-ops, vars: { release_name: 'datastore', chart_ref: 'apigee-datastore'}, tags: ['ds', 'apigeeds'] }
+  - { role: wait-for-k8s-resource, vars: { k8s_api_version: apps/v1, k8s_kind: StatefulSet, k8s_namespace: apigee, k8s_resource_name: apigee-cassandra-default }, tags: ['ds', 'apigeeds','wait_ds'] }
+  - { role: helm-ops, vars: { release_name: 'telemetry', chart_ref: 'apigee-telemetry' }, tags: ['at', 'apigeetelem'] }
+  - { role: wait-for-k8s-resource, vars: { k8s_api_version: apigee.cloud.google.com/v1alpha2, k8s_kind: ApigeeTelemetry, k8s_namespace: apigee, k8s_resource_name: apigee-telemetry }, tags: ['at','apigeetelem','wait_at'] }
+  - { role: wait-for-k8s-resource, vars: { k8s_api_version: apps/v1, k8s_kind: ReplicaSet, k8s_namespace: apigee, k8s_resource_name: null, label_selectors: ["com.apigee.apigeedeployment=apigee-metrics-adapter-apigee-telemetry"] }, tags: ['at', 'apigeetelem','wait_at'] }
+  - { role: wait-for-k8s-resource, vars: { k8s_api_version: apps/v1, k8s_kind: ReplicaSet, k8s_namespace: apigee, k8s_resource_name: null, label_selectors: ["com.apigee.apigeedeployment=apigee-metrics-apigee-telemetry-app"] }, tags: ['at', 'apigeetelem','wait_at'] }
+  - { role: wait-for-k8s-resource, vars: { k8s_api_version: apps/v1, k8s_kind: ReplicaSet, k8s_namespace: apigee, k8s_resource_name: null, label_selectors: ["com.apigee.apigeedeployment=apigee-metrics-apigee-telemetry-proxy"] }, tags: ['at', 'apigeetelem','wait_at'] }
+  - { role: helm-ops, vars: { release_name: 'redis', chart_ref: 'apigee-redis' }, tags: ['apigeeredis'] }
+  - { role: wait-for-k8s-resource, vars: { k8s_api_version: apps/v1, k8s_kind: StatefulSet, k8s_namespace: apigee, k8s_resource_name: apigee-redis-default }, tags: ['apigeeredis','wait_apigeeredis'] }
+  - { role: helm-ops, vars: { release_name: 'ingress-manager', chart_ref: 'apigee-ingress-manager' }, tags: ['apigeeingress'] } 
+  - { role: wait-for-k8s-resource, vars: { k8s_api_version: apps/v1, k8s_kind: Deployment, k8s_namespace: apigee, k8s_resource_name: apigee-ingressgateway-manager }, tags: ['apigeeingress','wait_apigeeingress'] }
+  - { role: helm-ops, vars: { release_name: '{{ overrides.gcp.projectID }}', chart_ref: 'apigee-org' }, tags: ['apigeeorg', 'apigeeorgs'] }
+  - { role: wait-for-k8s-resource, vars: { k8s_api_version: apigee.cloud.google.com/v1alpha2, k8s_kind: ApigeeOrganization, k8s_namespace: apigee, k8s_resource_name: null }, tags: ['apigeeorg','wait_apigeeorg'] }
+
+  tasks:
+  - name: deploy environment
+    include_role: { name: helm-ops, apply: { tags: apigeeenv } }
+    vars:
+      release_name: "{{ item.name }}"
+      chart_ref: 'apigee-env'
+      custom_values: true
+      set_values: 
+      - value: "env={{ item.name }}"
+        value_type: string
+    loop: "{{ overrides.envs }}"
+    tags: ['apigeeenv']
+
+  - name: wait for environment
+    include_role: { name: wait-for-k8s-resource, apply: { tags: wait_apigeeenv } }
+    vars:
+      k8s_api_version: apigee.cloud.google.com/v1alpha2
+      k8s_kind: ApigeeEnvironment
+      k8s_namespace: apigee
+      k8s_resource_name: null
+    tags: ['wait_apigeeenv']
+
+  - name: deploy environment-group
+    include_role: {name: helm-ops, apply: { tags: apigee-virtualhost }}
+    vars:
+      release_name: "{{ item.name }}"
+      chart_ref: 'apigee-virtualhost'
+      custom_values: true
+      set_values: 
+      - value: "envgroup={{ item.name }}"
+        value_type: string
+    loop: "{{ overrides.virtualhosts }}"
+    tags: ['apigee-virtualhost']
+
+  - name: wait for environment group 
+    include_role: { name: wait-for-k8s-resource, apply: { tags: wait_virtualhost } }
+    vars:
+      k8s_api_version: apigee.cloud.google.com/v1alpha1
+      k8s_kind: "{{ item }}"
+      k8s_namespace: apigee
+      k8s_resource_name: null
+    tags: ['wait_virtualhost']
+    with_items:
+    - ApigeeRoute
+    - ApigeeRouteConfig
+
+  - { name: validate-api-calls, include_role: { name: validate-api-calls, apply: { tags: validate }}, tags: ['validate'] }
+
+- name: Setup Apigee Hybrid Secondary DC
+  hosts: all
+  environment:
+    USE_GKE_GCLOUD_AUTH_PLUGIN: "true"
+    HELM_EXPERIMENTAL_OCI: "1"
+    KUBECONFIG: "{{ kubeconfigs.secondary }}"
+  vars:
+    cassandra_dc: dc-2
+  tags:
+  - dc2
+  roles:
+  - { role: cert-manager, tags: ['cert-manager'] }
+  - { role: kubectl-ops, vars: { operation: get, k8s_resource_type: namespace, k8s_resource: apigee, kubectl_args: '--kubeconfig {{ kubeconfigs.primary }} -o yaml > {{ setup_path }}/apigee-namespace.yaml'}, tags: ['dc2-prereq'] }
+  - { role: kubectl-ops, vars: { operation: get, k8s_resource_type: secret, k8s_resource: apigee-ca, k8s_namespace: cert-manager, kubectl_args: '--kubeconfig {{ kubeconfigs.primary }} -o yaml > {{ setup_path }}/apigee-ca.yaml'}, tags: ['dc2-prereq'] }
+  - { role: kubectl-ops, vars: { operation: apply, check_ns: apigee, kubectl_args: '-f {{ setup_path }}/apigee-namespace.yaml'} }
+  - { role: kubectl-ops, vars: { operation: apply, k8s_namespace: cert-manager, kubectl_args: '-f {{ setup_path }}/apigee-ca.yaml'} }
+  - { role: certificates, vars: { generate_certificates: false, clone_certificates: true, kubeconfig: "{{ kubeconfigs.primary }}"}, tags: ['certs'] }
+  - { role: prepare-helm, tags: ['prepare-helm'] }
+  - { role: prepare-service-accounts, vars: { clone_secret: true, kubeconfig: "{{ kubeconfigs.primary }}" }, tags: ['prepare-service-accounts'] }
+  - { role: enable-apigee-synchronizer, tags: ['enable-synchronizer'] }
+  - { role: bootstrap-apigee-crds, tags: ['bootstrap-apigee-crds'] }
+  - { role: get-cassandra-seed, vars: { kubeconfig: "{{ kubeconfigs.primary }}" }, tags: ['cass-seed'] }
+  - { role: apigee-hybrid-overrides, vars: { cassandra_seed_host: "{{ cassandra_seed_data }}"}, tags: ['generate-overrides'] }
+  - { role: helm-ops, vars: { release_name: 'operator', chart_ref: 'apigee-operator', release_namespace: 'apigee-system', create_namespace: true}, tags: ['ao'] }
+  - { role: wait-for-k8s-resource, vars: { k8s_api_version: v1, k8s_kind: Deployment, k8s_namespace: apigee-system, k8s_resource_name: apigee-controller-manager}, tags: ['ao','wait_ao'] }
+  - { role: helm-ops, vars: { release_name: 'datastore', chart_ref: 'apigee-datastore'}, tags: ['ds', 'apigeeds'] }
+  - { role: wait-for-k8s-resource, vars: { k8s_api_version: apps/v1, k8s_kind: StatefulSet, k8s_namespace: apigee, k8s_resource_name: apigee-cassandra-default }, tags: ['ds', 'apigeeds','wait_ds'] }
+  - { role: helm-ops, vars: { release_name: 'telemetry', chart_ref: 'apigee-telemetry' }, tags: ['at', 'apigeetelem'] }
+  - { role: wait-for-k8s-resource, vars: { k8s_api_version: apigee.cloud.google.com/v1alpha2, k8s_kind: ApigeeTelemetry, k8s_namespace: apigee, k8s_resource_name: apigee-telemetry }, tags: ['at','apigeetelem','wait_at'] }
+  - { role: wait-for-k8s-resource, vars: { k8s_api_version: apps/v1, k8s_kind: ReplicaSet, k8s_namespace: apigee, k8s_resource_name: null, label_selectors: ["com.apigee.apigeedeployment=apigee-metrics-adapter-apigee-telemetry"] }, tags: ['at', 'apigeetelem','wait_at'] }
+  - { role: wait-for-k8s-resource, vars: { k8s_api_version: apps/v1, k8s_kind: ReplicaSet, k8s_namespace: apigee, k8s_resource_name: null, label_selectors: ["com.apigee.apigeedeployment=apigee-metrics-apigee-telemetry-app"] }, tags: ['at', 'apigeetelem','wait_at'] }
+  - { role: wait-for-k8s-resource, vars: { k8s_api_version: apps/v1, k8s_kind: ReplicaSet, k8s_namespace: apigee, k8s_resource_name: null, label_selectors: ["com.apigee.apigeedeployment=apigee-metrics-apigee-telemetry-proxy"] }, tags: ['at', 'apigeetelem','wait_at'] }
+  - { role: helm-ops, vars: { release_name: 'redis', chart_ref: 'apigee-redis' }, tags: ['apigeeredis'] }
+  - { role: wait-for-k8s-resource, vars: { k8s_api_version: apps/v1, k8s_kind: StatefulSet, k8s_namespace: apigee, k8s_resource_name: apigee-redis-default }, tags: ['apigeeredis','wait_apigeeredis'] }
+  - { role: helm-ops, vars: { release_name: 'ingress-manager', chart_ref: 'apigee-ingress-manager' }, tags: ['apigeeingress'] } 
+  - { role: wait-for-k8s-resource, vars: { k8s_api_version: apps/v1, k8s_kind: Deployment, k8s_namespace: apigee, k8s_resource_name: apigee-ingressgateway-manager }, tags: ['apigeeingress','wait_apigeeingress'] }
+  - { role: helm-ops, vars: { release_name: '{{ overrides.gcp.projectID }}', chart_ref: 'apigee-org' }, tags: ['apigeeorg', 'apigeeorgs'] }
+
+  tasks:
+  - name: deploy environment
+    include_role: { name: helm-ops, apply: { tags: apigeeenv } }
+    vars:
+      release_name: "{{ item.name }}"
+      chart_ref: 'apigee-env'
+      custom_values: true
+      set_values: 
+      - value: "env={{ item.name }}"
+        value_type: string
+    loop: "{{ overrides.envs }}"
+    tags: ['apigeeenv']
+
+  - name: wait for environment
+    include_role: { name: wait-for-k8s-resource, apply: { tags: wait_apigeeenv } }
+    vars:
+      k8s_api_version: apigee.cloud.google.com/v1alpha2
+      k8s_kind: ApigeeEnvironment
+      k8s_namespace: apigee
+      k8s_resource_name: null
+    tags: ['wait_apigeeenv']
+
+  - name: deploy environment-group
+    include_role: {name: helm-ops, apply: { tags: apigee-virtualhost }}
+    vars:
+      release_name: "{{ item.name }}"
+      chart_ref: 'apigee-virtualhost'
+      custom_values: true
+      set_values: 
+      - value: "envgroup={{ item.name }}"
+        value_type: string
+    loop: "{{ overrides.virtualhosts }}"
+    tags: ['apigee-virtualhost']
+
+  - name: wait for environment group 
+    include_role: { name: wait-for-k8s-resource, apply: { tags: wait_virtualhost } }
+    vars:
+      k8s_api_version: apigee.cloud.google.com/v1alpha1
+      k8s_kind: "{{ item }}"
+      k8s_namespace: apigee
+      k8s_resource_name: null
+    tags: ['wait_virtualhost']
+    with_items:
+    - ApigeeRoute
+    - ApigeeRouteConfig
+
+- name: Setup Apigee Hybrid Secondary DC Post 
+  hosts: all
+  environment:
+    USE_GKE_GCLOUD_AUTH_PLUGIN: "true"
+    HELM_EXPERIMENTAL_OCI: "1"
+    KUBECONFIG: "{{ kubeconfigs.secondary }}"
+  vars:
+    cassandra_dc: dc-2
+  tags:
+  - dc2
+  - dc2-post
+  roles:
+  - { role: wait-for-k8s-resource, vars: { k8s_api_version: apigee.cloud.google.com/v1alpha2, k8s_kind: ApigeeOrganization, k8s_namespace: apigee, k8s_resource_name: null, custom_wait: true }, tags: ['apigeeorg','wait_apigeeorg'] }
+  - { role: setup-cassandra-data-replication, vars: { kubeconfig: "{{ kubeconfigs.primary }}" }, tags: ['cassandra-dr']}
+  - { role: wait-for-k8s-resource, vars: { k8s_api_version: apigee.cloud.google.com/v1alpha1, k8s_kind: CassandraDataReplication, k8s_namespace: apigee, k8s_resource_name: null, custom_wait: true, custom_state: complete }, tags: ['cassandra-dr','wait_cassandra-dr'] }
+  - { role: apigee-hybrid-overrides, tags: ['generate-overrides'] }
+  - { role: helm-ops, vars: { release_name: 'datastore', chart_ref: 'apigee-datastore'}, tags: ['ds', 'apigeeds'] }
+  - { role: wait-for-k8s-resource, vars: { k8s_api_version: apigee.cloud.google.com/v1alpha1, k8s_kind: ApigeeDatastore, k8s_namespace: apigee, k8s_resource_name: null, custom_wait: true }, tags: ['apigeeds','wait_apigeeds'] }
+  - { role: validate-api-calls, tags: ['validate'] }

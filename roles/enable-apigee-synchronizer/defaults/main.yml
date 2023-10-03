@@ -1,0 +1,4 @@
+---
+# defaults file for enable-apigee-synchronizer
+synchronizer_prod_svc_account: apigee-synchronizer
+synchronizer_non_prod_svc_account: apigee-non-prod
