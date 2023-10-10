@@ -112,13 +112,6 @@ overrides:
     hostnames:
     - test.api.example.com
 
-  - name: test2
-    selector:
-      # app1: apigee-ingressgateway
-    sslSecret:
-    hostnames:
-    - test2.api.example.com
-
   envs:
   - name: test1
     synchronizer:

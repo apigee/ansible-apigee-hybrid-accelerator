@@ -1,5 +1,10 @@
 ---
 # tasks file for cert-manager
+- name: Certificates directory exists
+  file:
+    path: "{{ setup_path }}"
+    state: directory
+
 - name: Download cert-manager
   uri:
     url: https://github.com/jetstack/cert-manager/releases/download/{{ cert_manager_version }}/cert-manager.yaml

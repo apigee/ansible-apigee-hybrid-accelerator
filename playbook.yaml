@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 ---
 - name: Setup Apigee Hybrid primary DC
   hosts: all
@@ -50,7 +51,7 @@
   - name: deploy environment
     include_role: { name: helm-ops, apply: { tags: apigeeenv } }
     vars:
-      release_name: "{{ item.name }}"
+      release_name: "apigee-env-{{ item.name }}"
       chart_ref: 'apigee-env'
       custom_values: true
       set_values: 
@@ -71,7 +72,7 @@
   - name: deploy environment-group
     include_role: {name: helm-ops, apply: { tags: apigee-virtualhost }}
     vars:
-      release_name: "{{ item.name }}"
+      release_name: "apigee-virtualhost-{{ item.name }}"
       chart_ref: 'apigee-virtualhost'
       custom_values: true
       set_values: 

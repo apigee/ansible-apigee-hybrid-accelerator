@@ -19,6 +19,13 @@ imagePullSecrets:
 - name: {{ overrides.imagePullSecrets }}
 {%- endif %}
 
+{% if overrides.httpProxy|default(false) -%}
+httpProxy:
+  host: {{ overrides.httpProxy.host }}
+  port: {{ overrides.httpProxy.port }}
+  scheme: {{ overrides.httpProxy.scheme|default('HTTPS') }}
+{%- endif %}
+
 
 {% if overrides.nodeSelector.requiredForScheduling != "" -%}
 nodeSelector:

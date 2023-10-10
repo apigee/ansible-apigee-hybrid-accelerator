@@ -76,7 +76,30 @@ generate-overrides | Generate Apigee Overrides
 prepare-helm | Download Apigee Hybrid Helm charts
 prepare-service-accounts | Create Service Keys & K8s Secrets
 validate | Validate Apigee Hybrid By deploying & invoking mock API
+wait_ao | Wait for apigee-operator to be up
+wait_apigeeenv | Wait for apigee enviornment custom resource to be running
+wait_apigeeingress | Wait for apigee ingress to be up
+wait_apigeeorg | Wait for apigee-org custom resource to be running
+wait_apigeeredis | Wait for apigee-redis to be up
+wait_at | Wait for apigee-telemetry to be up
+wait_ds | Wait for apigee-datastore (cassadra) to be up
+wait_virtualhost | Wait for apigee-route-config custom resource to be running
 
+## Authenticate gcloud and helm
+
+### Authenticate to gcloud cli as shown below
+```
+gcloud auth application-default login
+```
+
+### [Optional] Authenticate to helm registry if using self hosted or private registry
+
+```
+gcloud auth application-default print-access-token | helm registry login -u oauth2accesstoken \
+--password-stdin https://<artifact-registry-region>-docker.pkg.dev
+```
+
+## Usage
 To run the run the ansible playbook with a specific tag , run the below command
 
 ```
