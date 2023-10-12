@@ -1,3 +1,5 @@
+#!/bin/sh
+
 # Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,4 +14,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-localhost ansible_connection=local
+EXTENSION="${1:-yml}"
+SCRIPTPATH="$( cd "$(dirname "$0")" || exit >/dev/null 2>&1 ; pwd -P )"
+COPYRIGHT_FILE="$SCRIPTPATH/copyright"
+
+
+for i in $(find $SCRIPTPATH -name "*.$EXTENSION")
+do
+  if ! grep -q Copyright $i
+  then
+    cat $COPYRIGHT_FILE $i >$i.new && mv $i.new $i
+  fi
+done

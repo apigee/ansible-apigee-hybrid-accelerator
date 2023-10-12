@@ -1,19 +1,55 @@
+# Copyright 2023 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 ---
+# Path to download/generate files
 setup_path: "/tmp"
+
+# Set `cert_manager_version: : v1.7.2` refer: https://cloud.google.com/apigee/docs/hybrid/v1.10/install-cert-manager
 cert_manager_version: v1.7.2
 
-# TLS certificate details
-generate_certificates: false
-# cert_cn:
-# tls_namespace:
+################################################ TLS certificate details ################################################
 
-# service-account details
-deployment_environment: prod # prod OR non-prod
+# Set `generate_certificates: true`` to generate self signed certifcates
+# This will also create the K8s secrets to referece in overrides.yaml unless overidden below
+generate_certificates: false
+
+# Set this only when `generate_certificates: true`
+# Use `cert_cn` to set certifcate CN
+# cert_cn: apigee.com
+
+################################################ TLS certificate details ################################################
+
+################################################ Service Account details ################################################
+
+# Set to true to download service accounts JSON and create K8s Secrets
 create_service_account: false
+
+# Set this only when `create_service_account: true`
+# Set to  `prod` OR `non-prod` to generate service accounts based on https://cloud.google.com/apigee/docs/hybrid/v1.10/sa-about#recommended-sas
+deployment_environment: prod
+
+# Set this only when `create_service_account: false`
+# Set the Synchronizer service account to run https://cloud.google.com/apigee/docs/hybrid/v1.10/install-enable-synchronizer-access
 synchronizer_prod_svc_account: apigee-hybrid-user
 
-# helm details
-helm_chart_repo: oci://europe-west1-docker.pkg.dev/shared-sabre-wolverine/helm
+################################################ Service Account details ################################################
+
+################################################ Helm details ################################################
+# refer: https://cloud.google.com/apigee/docs/hybrid/preview/helm-install#pull-apigee-helm-charts
+
+helm_chart_repo: oci://us-docker.pkg.dev/apigee-release/apigee-hybrid-helm-charts
 helm_chart_version: 1.10.3
 helm_charts:
 - apigee-operator
@@ -25,16 +61,29 @@ helm_charts:
 - apigee-telemetry
 - apigee-virtualhost
 
-# Kubeconfigs
-kubeconfigs:
-  primary: /tmp/dc1.config
-  secondary: /tmp/dc2.config
+################################################helm details ################################################
 
-# params to run validation apis
+################################################Kubeconfigs ################################################
+
+kubeconfigs:
+  # set `primary: <Path to kubeconfig of K8s cluster>` to deploy Apigee Hybrid Primary DC
+  primary: /Users/ashwinknaik/codes/git/apigee-hybrid-ansible/ansible/certs/dc1.config
+  # set `secondary: <Path to kubeconfig of K8s cluster>` to deploy Apigee Hybrid Secondary DC
+  # secondary: /tmp/dc2.config
+
+################################################Kubeconfigs ################################################
+
+################################################Post Setup Validation Details ################################################
+
 internet_access: true
 validate_api_redeploy: false
 
-# apigee-hybrid-overrides
+################################################Post Setup Validation Details ################################################
+
+################################################Apigee Hybrid Helm Values ################################################
+
+## To fill this section refer the https://cloud.google.com/apigee/docs/hybrid/v1.10/config-prop-ref
+
 overrides:
   k8sCluster:
     name: apigee-hybrid-ansible1
@@ -402,3 +451,5 @@ overrides:
       requests:
         cpu: 300m
         memory: 128Mi
+
+################################################Apigee Hybrid Helm Values ############

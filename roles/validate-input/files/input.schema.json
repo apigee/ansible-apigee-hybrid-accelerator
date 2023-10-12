@@ -72,8 +72,7 @@
           }
         },
         "required": [
-          "primary",
-          "secondary"
+          "primary"
         ]
       },
       "internet_access": {

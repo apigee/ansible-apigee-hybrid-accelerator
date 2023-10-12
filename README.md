@@ -2,13 +2,12 @@
 
 To run the ansible playbook follow the below steps
 
-
 ### Pre-Requistes
 
 #### Manual packages to install
 Install the below packages
 
-- `python3 -m pip install requests==2.25.1`
+- `python3 -m pip install requests==2.25.1 jsonschema==4.19.1 jsonschema-specifications==2023.7.1`
 - helm >3.10 
 - ansible >=2.1
 - gcloud cli
