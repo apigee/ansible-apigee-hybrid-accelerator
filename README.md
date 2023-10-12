@@ -1,21 +1,37 @@
-# Ansible Playbooks to deploy Apigee Hybrid
+# Ansible playbooks to deploy Apigee Hybrid using Helm Charts
 
-To run the ansible playbook follow the below steps
+This repository contains a set of Ansible roles and playbooks to manage the installation, configuration and maintenance of Apigee Hybrid in your environment. Apigee Hybrid components are managed using helm charts through ansible roles.Apigee Hybrid combines the power of Apigee's API management with the flexibility and control of Kubernetes. With this project, you can automate common Apigee Hybrid management tasks, making it easier to deploy, configure, and maintain your Apigee Hybrid instances.
 
-### Pre-Requistes
+
+> Refer the [official doc](https://cloud.google.com/apigee/docs/hybrid/preview/helm-install) for more details on Helm charts for Apigee Hybrid.
+
+## Ansible Apigee Hybrid Accelerator Features
+The Ansible playbooks in this repository support a wide range of the installation, configuration and maintenance use cases that are necessary to successfully manage Apigee Hybrid clusters. We describe the uses cases that are supported as follows:
+
+| Feature Name | Feature Description |
+| --- | --- |
+| Single Region Deployment | Apigee Hybrid single region deployment|
+| Multi-Region Deployment | Apigee Hybrid Multi region deployment|
+| DC Decomission | Apigee Hybrid single or all region/DC decommission  |
+| Apigee Hybrid Component management | Apigee Hybrid component configuration/re-configuration/decommission. |
+
+### Prerequisites
 
 #### Manual packages to install
-Install the below packages
+You can follow manual steps  to install the below packages
 
 - `python3 -m pip install requests==2.25.1 jsonschema==4.19.1 jsonschema-specifications==2023.7.1`
-- helm >3.10 
-- ansible >=2.1
-- gcloud cli
-- kubectl
+- `helm >3.10`  refer https://helm.sh/docs/intro/install/
+- `ansible >=2.1`  refer https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html
+- `gcloud cli`   refer https://cloud.google.com/sdk/docs/install
+- `kubectl`  refer https://cloud.google.com/sdk/docs/components#installing_components
 
 OR
 
 #### Use Ansible to install packages
+
+Install [ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
+
 Use the playbook to deploy.
 > NOTE: The `pre-req.yaml` playbook has not been tested on all OS flavours.
 > Use with caution
@@ -26,35 +42,17 @@ sudo ansible-playbook pre-req.yaml -e 'install_helm=true' -e 'install_pip=true' 
 
 ### Configure Ansible Variables
 
-Please fill in the `vars.yaml`.
+Before using the Ansible playbooks you need to configure the necessary variables. 
+Modify the variable files located in the [vars](./vars) directory to match your environment.
 
-Here is an [Example Vars](vars/vars.yaml)
-
-
-### Run Ansible playbook
-To run the run the ansible playbook run the below command
-
-```
-ansible-playbook playbook.yaml -e @vars/vars.yaml
-```
-
-Provide your kubeconfig paths in `kubeconfigs` parameter in `vars.yaml` files.
 Refer [Example Vars](vars/vars.yaml)
-
-```yaml
-# Kubeconfigs
-kubeconfigs:
-  primary: /tmp/dc1.config
-  secondary: /tmp/dc2.config
-  ```
-
 
 ## Ansible tags
 The playbook exposes tags to selectively run tasks depending on the need.
 
 Below are the tags that are exposed in the playbook
 
-tag | function
+Ansible tag | Functionality
 --- | ---
 ao | Deploy apigee-operator Helm Chart
 apigee-virtualhost | Deploy apigee-virtualhost  Helm Chart
@@ -88,6 +86,8 @@ wait_virtualhost | Wait for apigee-route-config custom resource to be running
 ## Authenticate gcloud and helm
 
 ### Authenticate to gcloud cli as shown below
+> Ensure the Authenticating user OR service account has `roles/apigee.admin` role.
+
 ```
 gcloud auth application-default login
 ```
@@ -100,8 +100,76 @@ gcloud auth application-default print-access-token | helm registry login -u oaut
 ```
 
 ## Usage
-To run the run the ansible playbook with a specific tag , run the below command
 
+Below are some of the usage patterns.
+
+### Primary DC  Installation Only
+
+To deploy Apigee Hybrid in 1 Region only run the ansible playbook as shown below
+
+```
+ansible-playbook playbook.yaml -e @vars/vars.yaml  --tags "dc1"
+```
+
+### Primary & Secondary DC  Installation Only
+
+To deploy Apigee Hybrid in 2 Regions run the ansible playbook as shown below
+
+```
+ansible-playbook playbook.yaml -e @vars/vars.yaml
+```
+
+### Decomission Primary DC  Only
+
+To decomission Apigee Hybrid in the first region run the ansible playbook as shown below
+
+```
+ansible-playbook decomission.yaml -e @vars/vars.yaml --tags dc1
+```
+
+### Decomission Primary & Secondary DC  
+
+To decomission Apigee Hybrid from both Regions run the ansible playbook as shown below
+
+```
+ansible-playbook decomission.yaml -e @vars/vars.yaml
+```
+
+### Apigee Hybrid Component management
+To manage components via playbook you need to run playbook while passing the selective ansible tag.Some scenarios are listed below
+
+#### Validate the provided inputs
+To validate the inputs given to ansible
+```
+ansible-playbook playbook.yaml -e @vars/vars.yaml  --tags "validate-input" 
+```
+
+#### Validate the current setup
+To validate a running setup by executing mock APIs.
 ```
 ansible-playbook playbook.yaml -e @vars/vars.yaml  --tags "validate"
 ```
+
+#### To Update Apigee VirtualHost
+To update the Apigee Virtual Hosts.
+```
+ansible-playbook playbook.yaml -e @vars/vars.yaml  --tags "validate-input,generte-overrides,apigee-virtualhost,wait_virtualhost,validate"
+```
+
+
+## Limitations
+* Refer [link](https://cloud.google.com/apigee/docs/hybrid/preview/helm-install#limitations)
+
+
+## Contributing
+We welcome contributions from the community. If you would like to contribute to this project, please see our [Contribution Guidelines](./CONTRIBUTING.md).
+
+## License
+
+All solutions within this repository are provided under the
+[Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) license.
+Please see the [LICENSE](./LICENSE) file for more detailed terms and conditions.
+
+## Disclaimer
+
+This repository and its contents are not an official Google product.
