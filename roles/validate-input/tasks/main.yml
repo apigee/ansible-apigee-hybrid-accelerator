@@ -1,0 +1,32 @@
+---
+# tasks file for validate-input
+
+- debug: msg="{{hostvars[inventory_hostname] }}"
+
+- set_fact:
+    input_extra_data: |
+      {% set res = ({}) -%}
+      {% for key, value in hostvars[inventory_hostname].items() -%}
+      {% if 'ansible_' not in key %}
+        {% set ignored = res.update({ key: value }) -%}
+      {% endif %}
+      {%- endfor %}
+      {{ res }}
+  
+- set_fact:
+    input_extra_data_sanitized: "{{ input_extra_data | from_yaml }}"
+        
+- debug: msg="{{ input_extra_data_sanitized }}"
+
+  
+- name: set facts for data and criteria
+  set_fact:
+    criteria: "{{ lookup('ansible.builtin.file', 'input.schema.json')}}"
+
+- name: validate data in with jsonschema engine (by passing task vars as configurable plugin options)
+  ansible.utils.validate:
+    data: "{{ input_extra_data_sanitized }}"
+    criteria: "{{ criteria }}"
+    engine: ansible.utils.jsonschema
+  vars:
+    ansible_jsonschema_draft: draft7

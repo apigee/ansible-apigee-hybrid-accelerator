@@ -1,0 +1,1666 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "properties": {
+      "setup_path": {
+        "type": "string"
+      },
+      "cert_manager_version": {
+        "type": "string"
+      },
+      "generate_certificates": {
+        "type": "boolean"
+      },
+      "cert_cn": {
+        "type": "string"
+      },
+      "tls_namespace": {
+        "type": "string"
+      },
+      "deployment_environment": {
+        "type": "string"
+      },
+      "create_service_account": {
+        "type": "boolean"
+      },
+      "synchronizer_prod_svc_account": {
+        "type": "string"
+      },
+      "helm_chart_repo": {
+        "type": "string"
+      },
+      "helm_chart_version": {
+        "type": "string"
+      },
+      "helm_charts": {
+        "type": "array",
+        "items": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "string"
+          },
+          {
+            "type": "string"
+          },
+          {
+            "type": "string"
+          },
+          {
+            "type": "string"
+          },
+          {
+            "type": "string"
+          },
+          {
+            "type": "string"
+          },
+          {
+            "type": "string"
+          }
+        ]
+      },
+      "kubeconfigs": {
+        "type": "object",
+        "properties": {
+          "primary": {
+            "type": "string"
+          },
+          "secondary": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "primary",
+          "secondary"
+        ]
+      },
+      "internet_access": {
+        "type": "boolean"
+      },
+      "validate_api_redeploy": {
+        "type": "boolean"
+      },
+      "overrides": {
+        "type": "object",
+        "properties": {
+          "k8sCluster": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "region": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "name",
+              "region"
+            ]
+          },
+          "gcp": {
+            "type": "object",
+            "properties": {
+              "region": {
+                "type": "string"
+              },
+              "projectID": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "region",
+              "projectID"
+            ]
+          },
+          "revision": {
+            "type": "string"
+          },
+          "instanceID": {
+            "type": "string"
+          },
+          "multiOrgCluster": {
+            "type": "boolean"
+          },
+          "imagePullSecrets": {
+            "type": ["string", "null"]
+          },
+          "httpProxy": {
+            "type": ["string", "null"]
+          },
+          "nodeSelector": {
+            "type": "object",
+            "properties": {
+              "requiredForScheduling": {
+                "type": "boolean"
+              },
+              "apigeeRuntime": {
+                "type": "object",
+                "properties": {
+                  "key": {
+                    "type": "string"
+                  },
+                  "value": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "key",
+                  "value"
+                ]
+              },
+              "apigeeData": {
+                "type": "object",
+                "properties": {
+                  "key": {
+                    "type": "string"
+                  },
+                  "value": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "key",
+                  "value"
+                ]
+              }
+            },
+            "required": [
+              "requiredForScheduling",
+              "apigeeRuntime",
+              "apigeeData"
+            ]
+          },
+          "validateServiceAccounts": {
+            "type": "boolean"
+          },
+          "validateOrg": {
+            "type": "boolean"
+          },
+          "orgScopedUDCA": {
+            "type": "boolean"
+          },
+          "virtualhosts": {
+            "type": "array",
+            "items": [
+              {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "selector": {
+                    "type": ["string","object"]
+                  },
+                  "sslSecret": {
+                    "type": "string"
+                  },
+                  "hostnames": {
+                    "type": "array",
+                    "items": [
+                      {
+                        "type": "string"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "name",
+                  "sslSecret",
+                  "hostnames"
+                ]
+              }
+            ]
+          },
+          "envs": {
+            "type": "array",
+            "items": [
+              {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "synchronizer": {
+                    "type": "object",
+                    "properties": {
+                      "replicaCountMin": {
+                        "type": "integer"
+                      },
+                      "replicaCountMax": {
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "replicaCountMin",
+                      "replicaCountMax"
+                    ]
+                  },
+                  "runtime": {
+                    "type": "object",
+                    "properties": {
+                      "replicaCountMax": {
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "replicaCountMax"
+                    ]
+                  }
+                },
+                "required": [
+                  "name",
+                  "synchronizer",
+                  "runtime"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name"
+                ]
+              }
+            ]
+          },
+          "mart": {
+            "type": "object",
+            "properties": {
+              "serviceAccountRef": {
+                "type": "string"
+              },
+              "replicaCountMin": {
+                "type": "integer"
+              },
+              "replicaCountMax": {
+                "type": "integer"
+              },
+              "image": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string"
+                  },
+                  "tag": {
+                    "type": "string"
+                  },
+                  "pullPolicy": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "url",
+                  "tag",
+                  "pullPolicy"
+                ]
+              },
+              "resources": {
+                "type": "object",
+                "properties": {
+                  "requests": {
+                    "type": "object",
+                    "properties": {
+                      "cpu": {
+                        "type": "string"
+                      },
+                      "memory": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "cpu",
+                      "memory"
+                    ]
+                  }
+                },
+                "required": [
+                  "requests"
+                ]
+              }
+            },
+            "required": [
+              "serviceAccountRef",
+              "replicaCountMin",
+              "replicaCountMax",
+              "image",
+              "resources"
+            ]
+          },
+          "mintTaskScheduler": {
+            "type": "object",
+            "properties": {
+              "image": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string"
+                  },
+                  "tag": {
+                    "type": "string"
+                  },
+                  "pullPolicy": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "url",
+                  "tag",
+                  "pullPolicy"
+                ]
+              },
+              "resources": {
+                "type": "object",
+                "properties": {
+                  "requests": {
+                    "type": "object",
+                    "properties": {
+                      "cpu": {
+                        "type": "string"
+                      },
+                      "memory": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "cpu",
+                      "memory"
+                    ]
+                  }
+                },
+                "required": [
+                  "requests"
+                ]
+              }
+            },
+            "required": [
+              "image",
+              "resources"
+            ]
+          },
+          "synchronizer": {
+            "type": "object",
+            "properties": {
+              "replicaCountMin": {
+                "type": "integer"
+              },
+              "replicaCountMax": {
+                "type": "integer"
+              },
+              "serviceAccountRef": {
+                "type": "string"
+              },
+              "image": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string"
+                  },
+                  "tag": {
+                    "type": "string"
+                  },
+                  "pullPolicy": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "url",
+                  "tag",
+                  "pullPolicy"
+                ]
+              },
+              "resources": {
+                "type": "object",
+                "properties": {
+                  "requests": {
+                    "type": "object",
+                    "properties": {
+                      "cpu": {
+                        "type": "string"
+                      },
+                      "memory": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "cpu",
+                      "memory"
+                    ]
+                  }
+                },
+                "required": [
+                  "requests"
+                ]
+              }
+            },
+            "required": [
+              "replicaCountMin",
+              "replicaCountMax",
+              "serviceAccountRef",
+              "image",
+              "resources"
+            ]
+          },
+          "runtime": {
+            "type": "object",
+            "properties": {
+              "serviceAccountRef": {
+                "type": "string"
+              },
+              "replicaCountMin": {
+                "type": "integer"
+              },
+              "replicaCountMax": {
+                "type": "integer"
+              },
+              "image": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string"
+                  },
+                  "tag": {
+                    "type": "string"
+                  },
+                  "pullPolicy": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "url",
+                  "tag",
+                  "pullPolicy"
+                ]
+              },
+              "resources": {
+                "type": "object",
+                "properties": {
+                  "requests": {
+                    "type": "object",
+                    "properties": {
+                      "cpu": {
+                        "type": "string"
+                      },
+                      "memory": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "cpu",
+                      "memory"
+                    ]
+                  }
+                },
+                "required": [
+                  "requests"
+                ]
+              }
+            },
+            "required": [
+              "serviceAccountRef",
+              "replicaCountMin",
+              "replicaCountMax",
+              "image",
+              "resources"
+            ]
+          },
+          "cassandra": {
+            "type": "object",
+            "properties": {
+              "hostNetwork": {
+                "type": "boolean"
+              },
+              "auth": {
+                "type": "object",
+                "properties": {
+                  "secret": {
+                    "type": "string"
+                  },
+                  "image": {
+                    "type": "object",
+                    "properties": {
+                      "url": {
+                        "type": "string"
+                      },
+                      "tag": {
+                        "type": "string"
+                      },
+                      "pullPolicy": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "url",
+                      "tag",
+                      "pullPolicy"
+                    ]
+                  }
+                },
+                "required": [
+                  "secret",
+                  "image"
+                ]
+              },
+              "replicaCount": {
+                "type": "integer"
+              },
+              "storage": {
+                "type": "object",
+                "properties": {
+                  "storageclass": {
+                    "type": ["string", "null"]
+                  },
+                  "capacity": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "storageclass",
+                  "capacity"
+                ]
+              },
+              "image": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string"
+                  },
+                  "tag": {
+                    "type": "string"
+                  },
+                  "pullPolicy": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "url",
+                  "tag",
+                  "pullPolicy"
+                ]
+              },
+              "resources": {
+                "type": "object",
+                "properties": {
+                  "requests": {
+                    "type": "object",
+                    "properties": {
+                      "cpu": {
+                        "type": "string"
+                      },
+                      "memory": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "cpu",
+                      "memory"
+                    ]
+                  }
+                },
+                "required": [
+                  "requests"
+                ]
+              },
+              "maxHeapSize": {
+                "type": "string"
+              },
+              "heapNewSize": {
+                "type": "string"
+              },
+              "backup": {
+                "type": "object",
+                "properties": {
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "image": {
+                    "type": "object",
+                    "properties": {
+                      "url": {
+                        "type": "string"
+                      },
+                      "tag": {
+                        "type": "string"
+                      },
+                      "pullPolicy": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "url",
+                      "tag",
+                      "pullPolicy"
+                    ]
+                  },
+                  "serviceAccountRef": {
+                    "type": "string"
+                  },
+                  "schedule": {
+                    "type": "string"
+                  },
+                  "dbStorageBucket": {
+                    "type": ["string", "null"]
+                  }
+                },
+                "required": [
+                  "enabled",
+                  "image",
+                  "serviceAccountRef",
+                  "schedule",
+                  "dbStorageBucket"
+                ]
+              },
+              "restore": {
+                "type": "object",
+                "properties": {
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "snapshotTimestamp": {
+                    "type": ["string", "null"]
+                  },
+                  "image": {
+                    "type": "object",
+                    "properties": {
+                      "url": {
+                        "type": "string"
+                      },
+                      "tag": {
+                        "type": "string"
+                      },
+                      "pullPolicy": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "url",
+                      "tag",
+                      "pullPolicy"
+                    ]
+                  },
+                  "serviceAccountRef": {
+                    "type": "string"
+                  },
+                  "dbStorageBucket": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "enabled",
+                  "snapshotTimestamp",
+                  "image",
+                  "serviceAccountRef",
+                  "dbStorageBucket"
+                ]
+              }
+            },
+            "required": [
+              "hostNetwork",
+              "auth",
+              "replicaCount",
+              "storage",
+              "image",
+              "resources",
+              "maxHeapSize",
+              "heapNewSize",
+              "backup",
+              "restore"
+            ]
+          },
+          "udca": {
+            "type": "object",
+            "properties": {
+              "serviceAccountRef": {
+                "type": "string"
+              },
+              "replicaCountMin": {
+                "type": "integer"
+              },
+              "replicaCountMax": {
+                "type": "integer"
+              },
+              "image": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string"
+                  },
+                  "tag": {
+                    "type": "string"
+                  },
+                  "pullPolicy": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "url",
+                  "tag",
+                  "pullPolicy"
+                ]
+              },
+              "resources": {
+                "type": "object",
+                "properties": {
+                  "requests": {
+                    "type": "object",
+                    "properties": {
+                      "cpu": {
+                        "type": "string"
+                      },
+                      "memory": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "cpu",
+                      "memory"
+                    ]
+                  }
+                },
+                "required": [
+                  "requests"
+                ]
+              },
+              "fluentd": {
+                "type": "object",
+                "properties": {
+                  "image": {
+                    "type": "object",
+                    "properties": {
+                      "url": {
+                        "type": "string"
+                      },
+                      "tag": {
+                        "type": "string"
+                      },
+                      "pullPolicy": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "url",
+                      "tag",
+                      "pullPolicy"
+                    ]
+                  },
+                  "resources": {
+                    "type": "object",
+                    "properties": {
+                      "limits": {
+                        "type": "object",
+                        "properties": {
+                          "memory": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "memory"
+                        ]
+                      },
+                      "requests": {
+                        "type": "object",
+                        "properties": {
+                          "cpu": {
+                            "type": "string"
+                          },
+                          "memory": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "cpu",
+                          "memory"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "limits",
+                      "requests"
+                    ]
+                  }
+                },
+                "required": [
+                  "image",
+                  "resources"
+                ]
+              }
+            },
+            "required": [
+              "serviceAccountRef",
+              "replicaCountMin",
+              "replicaCountMax",
+              "image",
+              "resources",
+              "fluentd"
+            ]
+          },
+          "logger": {
+            "type": "object",
+            "properties": {
+              "enabled": {
+                "type": "boolean"
+              },
+              "terminationGracePeriodSeconds": {
+                "type": "integer"
+              },
+              "image": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string"
+                  },
+                  "tag": {
+                    "type": "string"
+                  },
+                  "pullPolicy": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "url",
+                  "tag",
+                  "pullPolicy"
+                ]
+              },
+              "serviceAccountRef": {
+                "type": "string"
+              },
+              "resources": {
+                "type": "object",
+                "properties": {
+                  "limits": {
+                    "type": "object",
+                    "properties": {
+                      "cpu": {
+                        "type": "string"
+                      },
+                      "memory": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "cpu",
+                      "memory"
+                    ]
+                  },
+                  "requests": {
+                    "type": "object",
+                    "properties": {
+                      "cpu": {
+                        "type": "string"
+                      },
+                      "memory": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "cpu",
+                      "memory"
+                    ]
+                  }
+                },
+                "required": [
+                  "limits",
+                  "requests"
+                ]
+              },
+              "proxyURL": {
+                "type": ["string", "null"]
+              }
+            },
+            "required": [
+              "enabled",
+              "terminationGracePeriodSeconds",
+              "image",
+              "serviceAccountRef",
+              "resources",
+              "proxyURL"
+            ]
+          },
+          "metrics": {
+            "type": "object",
+            "properties": {
+              "enabled": {
+                "type": "boolean"
+              },
+              "serviceAccountRef": {
+                "type": "string"
+              },
+              "appStackdriverExporter": {
+                "type": "object",
+                "properties": {
+                  "resources": {
+                    "type": "object",
+                    "properties": {
+                      "limits": {
+                        "type": "object",
+                        "properties": {
+                          "cpu": {
+                            "type": "string"
+                          },
+                          "memory": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "cpu",
+                          "memory"
+                        ]
+                      },
+                      "requests": {
+                        "type": "object",
+                        "properties": {
+                          "cpu": {
+                            "type": "string"
+                          },
+                          "memory": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "cpu",
+                          "memory"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "limits",
+                      "requests"
+                    ]
+                  }
+                },
+                "required": [
+                  "resources"
+                ]
+              },
+              "proxyStackdriverExporter": {
+                "type": "object",
+                "properties": {
+                  "resources": {
+                    "type": "object",
+                    "properties": {
+                      "limits": {
+                        "type": "object",
+                        "properties": {
+                          "cpu": {
+                            "type": "string"
+                          },
+                          "memory": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "cpu",
+                          "memory"
+                        ]
+                      },
+                      "requests": {
+                        "type": "object",
+                        "properties": {
+                          "cpu": {
+                            "type": "string"
+                          },
+                          "memory": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "cpu",
+                          "memory"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "limits",
+                      "requests"
+                    ]
+                  }
+                },
+                "required": [
+                  "resources"
+                ]
+              },
+              "adapter": {
+                "type": "object",
+                "properties": {
+                  "image": {
+                    "type": "object",
+                    "properties": {
+                      "url": {
+                        "type": "string"
+                      },
+                      "tag": {
+                        "type": "string"
+                      },
+                      "pullPolicy": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "url",
+                      "tag",
+                      "pullPolicy"
+                    ]
+                  },
+                  "serviceAccountRef": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "image",
+                  "serviceAccountRef"
+                ]
+              },
+              "prometheus": {
+                "type": "object",
+                "properties": {
+                  "image": {
+                    "type": "object",
+                    "properties": {
+                      "url": {
+                        "type": "string"
+                      },
+                      "tag": {
+                        "type": "string"
+                      },
+                      "pullPolicy": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "url",
+                      "tag",
+                      "pullPolicy"
+                    ]
+                  }
+                },
+                "required": [
+                  "image"
+                ]
+              },
+              "sdSidecar": {
+                "type": "object",
+                "properties": {
+                  "image": {
+                    "type": "object",
+                    "properties": {
+                      "url": {
+                        "type": "string"
+                      },
+                      "tag": {
+                        "type": "string"
+                      },
+                      "pullPolicy": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "url",
+                      "tag",
+                      "pullPolicy"
+                    ]
+                  }
+                },
+                "required": [
+                  "image"
+                ]
+              },
+              "proxyURL": {
+                "type": ["string", "null"]
+              }
+            },
+            "required": [
+              "enabled",
+              "serviceAccountRef",
+              "appStackdriverExporter",
+              "proxyStackdriverExporter",
+              "adapter",
+              "prometheus",
+              "sdSidecar",
+              "proxyURL"
+            ]
+          },
+          "connectAgent": {
+            "type": "object",
+            "properties": {
+              "serviceAccountRef": {
+                "type": "string"
+              },
+              "image": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string"
+                  },
+                  "tag": {
+                    "type": "string"
+                  },
+                  "pullPolicy": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "url",
+                  "tag",
+                  "pullPolicy"
+                ]
+              },
+              "replicaCountMin": {
+                "type": "integer"
+              },
+              "replicaCountMax": {
+                "type": "integer"
+              },
+              "resources": {
+                "type": "object",
+                "properties": {
+                  "requests": {
+                    "type": "object",
+                    "properties": {
+                      "cpu": {
+                        "type": "string"
+                      },
+                      "memory": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "cpu",
+                      "memory"
+                    ]
+                  }
+                },
+                "required": [
+                  "requests"
+                ]
+              }
+            },
+            "required": [
+              "serviceAccountRef",
+              "image",
+              "replicaCountMin",
+              "replicaCountMax",
+              "resources"
+            ]
+          },
+          "watcher": {
+            "type": "object",
+            "properties": {
+              "serviceAccountRef": {
+                "type": "string"
+              },
+              "image": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string"
+                  },
+                  "tag": {
+                    "type": "string"
+                  },
+                  "pullPolicy": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "url",
+                  "tag",
+                  "pullPolicy"
+                ]
+              },
+              "replicaCountMin": {
+                "type": "integer"
+              },
+              "replicaCountMax": {
+                "type": "integer"
+              },
+              "resources": {
+                "type": "object",
+                "properties": {
+                  "requests": {
+                    "type": "object",
+                    "properties": {
+                      "cpu": {
+                        "type": "string"
+                      },
+                      "memory": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "cpu",
+                      "memory"
+                    ]
+                  }
+                },
+                "required": [
+                  "requests"
+                ]
+              }
+            },
+            "required": [
+              "serviceAccountRef",
+              "image",
+              "replicaCountMin",
+              "replicaCountMax",
+              "resources"
+            ]
+          },
+          "redis": {
+            "type": "object",
+            "properties": {
+              "image": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string"
+                  },
+                  "tag": {
+                    "type": "string"
+                  },
+                  "pullPolicy": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "url",
+                  "tag",
+                  "pullPolicy"
+                ]
+              },
+              "replicaCount": {
+                "type": "integer"
+              },
+              "resources": {
+                "type": "object",
+                "properties": {
+                  "requests": {
+                    "type": "object",
+                    "properties": {
+                      "cpu": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "cpu"
+                    ]
+                  }
+                },
+                "required": [
+                  "requests"
+                ]
+              },
+              "envoy": {
+                "type": "object",
+                "properties": {
+                  "image": {
+                    "type": "object",
+                    "properties": {
+                      "url": {
+                        "type": "string"
+                      },
+                      "tag": {
+                        "type": "string"
+                      },
+                      "pullPolicy": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "url",
+                      "tag",
+                      "pullPolicy"
+                    ]
+                  },
+                  "replicaCountMin": {
+                    "type": "integer"
+                  },
+                  "replicaCountMax": {
+                    "type": "integer"
+                  },
+                  "resources": {
+                    "type": "object",
+                    "properties": {
+                      "requests": {
+                        "type": "object",
+                        "properties": {
+                          "cpu": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "cpu"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "requests"
+                    ]
+                  }
+                },
+                "required": [
+                  "image",
+                  "replicaCountMin",
+                  "replicaCountMax",
+                  "resources"
+                ]
+              }
+            },
+            "required": [
+              "image",
+              "replicaCount",
+              "resources",
+              "envoy"
+            ]
+          },
+          "ao": {
+            "type": "object",
+            "properties": {
+              "image": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string"
+                  },
+                  "tag": {
+                    "type": "string"
+                  },
+                  "pullPolicy": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "url",
+                  "tag",
+                  "pullPolicy"
+                ]
+              },
+              "resources": {
+                "type": "object",
+                "properties": {
+                  "limits": {
+                    "type": "object",
+                    "properties": {
+                      "cpu": {
+                        "type": "string"
+                      },
+                      "memory": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "cpu",
+                      "memory"
+                    ]
+                  },
+                  "requests": {
+                    "type": "object",
+                    "properties": {
+                      "cpu": {
+                        "type": "string"
+                      },
+                      "memory": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "cpu",
+                      "memory"
+                    ]
+                  }
+                },
+                "required": [
+                  "limits",
+                  "requests"
+                ]
+              },
+              "installer": {
+                "type": "object",
+                "properties": {
+                  "image": {
+                    "type": "object",
+                    "properties": {
+                      "url": {
+                        "type": "string"
+                      },
+                      "tag": {
+                        "type": "string"
+                      },
+                      "pullPolicy": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "url",
+                      "tag",
+                      "pullPolicy"
+                    ]
+                  }
+                },
+                "required": [
+                  "image"
+                ]
+              }
+            },
+            "required": [
+              "image",
+              "resources",
+              "installer"
+            ]
+          },
+          "kubeRBACProxy": {
+            "type": "object",
+            "properties": {
+              "image": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string"
+                  },
+                  "tag": {
+                    "type": "string"
+                  },
+                  "pullPolicy": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "url",
+                  "tag",
+                  "pullPolicy"
+                ]
+              }
+            },
+            "required": [
+              "image"
+            ]
+          },
+          "istiod": {
+            "type": "object",
+            "properties": {
+              "image": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string"
+                  },
+                  "tag": {
+                    "type": "string"
+                  },
+                  "pullPolicy": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "url",
+                  "tag",
+                  "pullPolicy"
+                ]
+              },
+              "resources": {
+                "type": "object",
+                "properties": {
+                  "limits": {
+                    "type": "object",
+                    "properties": {
+                      "cpu": {
+                        "type": "string"
+                      },
+                      "memory": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "cpu",
+                      "memory"
+                    ]
+                  },
+                  "requests": {
+                    "type": "object",
+                    "properties": {
+                      "cpu": {
+                        "type": "string"
+                      },
+                      "memory": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "cpu",
+                      "memory"
+                    ]
+                  }
+                },
+                "required": [
+                  "limits",
+                  "requests"
+                ]
+              },
+              "accessLogFile": {
+                "type": "string"
+              },
+              "accessLogFormat": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "image",
+              "resources",
+              "accessLogFile",
+              "accessLogFormat"
+            ]
+          },
+          "ingressGateway": {
+            "type": "object",
+            "properties": {
+              "image": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string"
+                  },
+                  "tag": {
+                    "type": "string"
+                  },
+                  "pullPolicy": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "url",
+                  "tag",
+                  "pullPolicy"
+                ]
+              },
+              "resources": {
+                "type": "object",
+                "properties": {
+                  "limits": {
+                    "type": "object",
+                    "properties": {
+                      "cpu": {
+                        "type": "string"
+                      },
+                      "memory": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "cpu",
+                      "memory"
+                    ]
+                  },
+                  "requests": {
+                    "type": "object",
+                    "properties": {
+                      "cpu": {
+                        "type": "string"
+                      },
+                      "memory": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "cpu",
+                      "memory"
+                    ]
+                  }
+                },
+                "required": [
+                  "limits",
+                  "requests"
+                ]
+              }
+            },
+            "required": [
+              "image",
+              "resources"
+            ]
+          }
+        },
+        "required": [
+          "k8sCluster",
+          "gcp",
+          "revision",
+          "instanceID",
+          "nodeSelector",
+          "virtualhosts",
+          "envs",
+          "mart",
+          "mintTaskScheduler",
+          "synchronizer",
+          "runtime",
+          "cassandra",
+          "udca",
+          "logger",
+          "metrics",
+          "connectAgent",
+          "watcher",
+          "redis",
+          "ao",
+          "kubeRBACProxy",
+          "istiod",
+          "ingressGateway"
+        ]
+      }
+    },
+    "required": [
+      "setup_path",
+      "cert_manager_version",
+      "deployment_environment",
+      "create_service_account",
+      "synchronizer_prod_svc_account",
+      "helm_chart_repo",
+      "helm_chart_version",
+      "helm_charts",
+      "kubeconfigs",
+      "internet_access",
+      "validate_api_redeploy",
+      "overrides"
+    ]
+  }

@@ -1,33 +1,19 @@
-# Copyright 2023 Google LLC
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 ---
-setup_path: "/Users/process"
+setup_path: "/tmp"
 cert_manager_version: v1.7.2
-apigeectl_version: 1.10.2
 
 # TLS certificate details
-# generate_certificates: true
-cert_cn: "apigee.com"
-tls_namespace: apigee
+generate_certificates: false
+# cert_cn:
+# tls_namespace:
 
 # service-account details
 deployment_environment: prod # prod OR non-prod
-create_service_account: true
+create_service_account: false
+synchronizer_prod_svc_account: apigee-hybrid-user
 
 # helm details
-helm_chart_repo: oci://us-docker.pkg.dev/apigee-release/apigee-hybrid-helm-charts
+helm_chart_repo: oci://europe-west1-docker.pkg.dev/shared-sabre-wolverine/helm
 helm_chart_version: 1.10.3
 helm_charts:
 - apigee-operator
@@ -41,8 +27,8 @@ helm_charts:
 
 # Kubeconfigs
 kubeconfigs:
-  primary: /Users/dc1.config
-  secondary: /Users/dc2.config
+  primary: /tmp/dc1.config
+  secondary: /tmp/dc2.config
 
 # params to run validation apis
 internet_access: true
@@ -67,7 +53,7 @@ overrides:
   #
   gcp:
     region: us-central1
-    projectID: xxxs-xxxxx-xxxxx
+    projectID: shared-sabre-wolverine
   revision: "1103"
   instanceID: "asdasdmasdmasmd"
   #
@@ -80,6 +66,12 @@ overrides:
   # k8s secret name to use for pulling the docker images.
   #
   imagePullSecrets: 
+
+  # httpProxy:
+    # host: 172.23.3.99
+    # port: 8080
+    # scheme: HTTP
+
 
   nodeSelector:
     requiredForScheduling: true
@@ -106,11 +98,19 @@ overrides:
 
   virtualhosts:
   - name: test
-    selector: 
+    # selector:
       # app1: apigee-ingressgateway
-    sslSecret: 
+    # tlsMode: MUTUAL
+    sslSecret: apigee-tls-secret
     hostnames:
     - test.api.example.com
+
+  # - name: test2
+  #   selector:
+  #     # app1: apigee-ingressgateway
+  #   sslSecret:
+  #   hostnames:
+  #   - test2.api.example.com
 
   envs:
   - name: test1
@@ -123,7 +123,7 @@ overrides:
   - name: test2
 
   mart:
-    serviceAccountRef: ""
+    serviceAccountRef: apigee-hybrid-secret
     replicaCountMin: 1
     replicaCountMax: 2
     image:
@@ -150,7 +150,7 @@ overrides:
   synchronizer:
     replicaCountMin: 1
     replicaCountMax: 4
-    serviceAccountRef: 
+    serviceAccountRef: apigee-hybrid-secret 
     image:
       url: "gcr.io/apigee-release/hybrid/apigee-synchronizer"
       tag: "1.10.3"
@@ -163,7 +163,7 @@ overrides:
   # Apigee Runtime.
   #
   runtime:
-    serviceAccountRef: ""
+    serviceAccountRef: apigee-hybrid-secret
     replicaCountMin: 1
     replicaCountMax: 4
     image:
@@ -207,7 +207,7 @@ overrides:
         url: "gcr.io/apigee-release/hybrid/apigee-cassandra-backup-utility"
         tag: "1.10.3"
         pullPolicy: IfNotPresent
-      serviceAccountRef:
+      serviceAccountRef: apigee-hybrid-secret
       schedule: "0 2 * * *"
       dbStorageBucket:
     restore:
@@ -217,13 +217,13 @@ overrides:
         url: "gcr.io/apigee-release/hybrid/apigee-cassandra-backup-utility"
         tag: "1.10.3"
         pullPolicy: IfNotPresent
-      serviceAccountRef:
+      serviceAccountRef: apigee-hybrid-secret
       dbStorageBucket: ""
   #
   # Apigee UDCA.
   #
   udca:
-    serviceAccountRef: ""
+    serviceAccountRef: apigee-hybrid-secret
     replicaCountMin: 1
     replicaCountMax: 4
     image:
@@ -255,7 +255,7 @@ overrides:
       url: "gcr.io/apigee-release/hybrid/apigee-fluent-bit"
       tag: "2.1.8"
       pullPolicy: IfNotPresent
-    serviceAccountRef:
+    serviceAccountRef: apigee-hybrid-secret
     resources:
       limits:
         cpu: 200m
@@ -269,7 +269,7 @@ overrides:
   #
   metrics:
     enabled: true
-    serviceAccountRef:
+    serviceAccountRef: apigee-hybrid-secret
     appStackdriverExporter:
       resources:
         limits:
@@ -291,7 +291,7 @@ overrides:
         url: "gcr.io/apigee-release/hybrid/apigee-prometheus-adapter"
         tag: "v0.11.0"
         pullPolicy: IfNotPresent
-      serviceAccountRef:
+      serviceAccountRef: apigee-hybrid-secret
     prometheus:
       image:
         url: "gcr.io/apigee-release/hybrid/apigee-prom-prometheus"
@@ -305,7 +305,7 @@ overrides:
     proxyURL:
   # Apigee Connect Agent
   connectAgent:
-    serviceAccountRef: 
+    serviceAccountRef: apigee-hybrid-secret 
     image:
       url: "gcr.io/apigee-release/hybrid/apigee-connect-agent"
       tag: "1.10.3"
@@ -318,7 +318,7 @@ overrides:
         memory: 128Mi
   # Apigee Watcher
   watcher:
-    serviceAccountRef: 
+    serviceAccountRef: apigee-hybrid-secret 
     image:
       url: "gcr.io/apigee-release/hybrid/apigee-watcher"
       tag: "1.10.3"

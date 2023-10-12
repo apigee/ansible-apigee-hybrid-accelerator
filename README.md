@@ -75,6 +75,7 @@ enable-synchronizer | Enable Apigee Synchronizer
 generate-overrides | Generate Apigee Overrides
 prepare-helm | Download Apigee Hybrid Helm charts
 prepare-service-accounts | Create Service Keys & K8s Secrets
+validate-input | Validates the inputs given to the playbook
 validate | Validate Apigee Hybrid By deploying & invoking mock API
 wait_ao | Wait for apigee-operator to be up
 wait_apigeeenv | Wait for apigee enviornment custom resource to be running

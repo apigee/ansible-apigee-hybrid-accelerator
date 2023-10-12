@@ -48,24 +48,23 @@ virtualhosts:
 {% for vhost_data in overrides.virtualhosts -%}
 - name: {{ vhost_data.name }}
   sslSecret: {{ vhost_data.sslSecret if vhost_data.sslSecret else vhost_data.name+"-ssl-secret" }}
-  selector:
-  {% macro virtualhosts_selector() %}
-  {% if vhost_data.get('selector') -%}
-  {% for k,v in vhost_data.get('selector').items() -%}
-  {{k}}: {{ v }}
-  {% endfor %}
-  {% else %}
-  app: apigee-ingressgateway
-  {%- endif %}
-  {% endmacro %}
-{{ virtualhosts_selector()|indent( width=4) }}
-
-{% macro virtualhosts() %}
+{% macro virtualhosts_tls_mode() %}
 {% if vhost_data.tlsMode|default('SIMPLE') == 'MUTUAL' -%}
   tlsMode: MUTUAL
 {%- endif %}
 {% endmacro %}
-{{ virtualhosts()|indent( width=2) }}
+  {{ virtualhosts_tls_mode()|indent( width=4) }}
+  selector:
+{% macro virtualhosts_selector() %}
+{% if vhost_data.get('selector') -%}
+{% for k_s,v_s in vhost_data.get('selector').items() -%}
+{{ '  ' }}{{ k_s }}: {{ v_s }}
+{% endfor %}
+{% else %}
+  app: apigee-ingressgateway
+{%- endif %}
+{% endmacro %}
+  {{ virtualhosts_selector() }}
 {% endfor %}
 
 envs:
