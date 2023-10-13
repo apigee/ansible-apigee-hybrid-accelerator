@@ -1,6 +1,6 @@
 # Ansible playbooks to deploy Apigee Hybrid using Helm Charts
 
-This repository contains a set of Ansible roles and playbooks to manage the installation, configuration and maintenance of Apigee Hybrid in your environment. Apigee Hybrid components are managed using helm charts through ansible roles.Apigee Hybrid combines the power of Apigee's API management with the flexibility and control of Kubernetes. With this project, you can automate common Apigee Hybrid management tasks, making it easier to deploy, configure, and maintain your Apigee Hybrid instances.
+This repository contains a set of Ansible roles and playbooks to manage the installation, configuration and maintenance of Apigee Hybrid in your environment. Apigee Hybrid components are managed using helm charts through ansible roles.Apigee Hybrid combines the power of Apigee's API management with the flexibility and control of Kubernetes. With this playbooks, you can automate common Apigee Hybrid management tasks, making it easier to deploy, configure, and maintain your Apigee Hybrid instances.
 
 
 > Refer the [official doc](https://cloud.google.com/apigee/docs/hybrid/preview/helm-install) for more details on Helm charts for Apigee Hybrid.
@@ -17,7 +17,12 @@ The Ansible playbooks in this repository support a wide range of the installatio
 
 ### Prerequisites
 
-#### Manual packages to install
+#### Setting up the Apigee Hybrid Control plane
+You can use the Apigee terraform [module](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/master/modules/apigee#all-resources-hybrid-control-plane) to setup the Apigee Hybrid control plane 
+
+#### Install Required packages to run the playbook
+
+##### Manual packages to install
 You can follow manual steps  to install the below packages
 
 - `python3 -m pip install requests==2.25.1 jsonschema==4.19.1 jsonschema-specifications==2023.7.1`
@@ -28,7 +33,7 @@ You can follow manual steps  to install the below packages
 
 OR
 
-#### Use Ansible to install packages
+##### Use Ansible to install packages
 
 Install [ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
 
@@ -54,6 +59,8 @@ Below are the tags that are exposed in the playbook
 
 Ansible tag | Functionality
 --- | ---
+dc1 | Deploy Apigee Hybrid on Primary Kubeconfig
+dc2 | Deploy Apigee Hybrid on Secondary Kubeconfig
 ao | Deploy apigee-operator Helm Chart
 apigee-virtualhost | Deploy apigee-virtualhost  Helm Chart
 apigeeds | Deploy apigee-datastore Helm Chart
@@ -119,20 +126,20 @@ To deploy Apigee Hybrid in 2 Regions run the ansible playbook as shown below
 ansible-playbook playbook.yaml -e @vars/vars.yaml
 ```
 
-### Decomission Primary DC  Only
+### Decommission Primary DC  Only
 
-To decomission Apigee Hybrid in the first region run the ansible playbook as shown below
-
-```
-ansible-playbook decomission.yaml -e @vars/vars.yaml --tags dc1
-```
-
-### Decomission Primary & Secondary DC  
-
-To decomission Apigee Hybrid from both Regions run the ansible playbook as shown below
+To decommission Apigee Hybrid in the first region run the ansible playbook as shown below
 
 ```
-ansible-playbook decomission.yaml -e @vars/vars.yaml
+ansible-playbook decommission.yaml -e @vars/vars.yaml --tags dc1
+```
+
+### Decommission Primary & Secondary DC  
+
+To decommission Apigee Hybrid from both Regions run the ansible playbook as shown below
+
+```
+ansible-playbook decommission.yaml -e @vars/vars.yaml
 ```
 
 ### Apigee Hybrid Component management
