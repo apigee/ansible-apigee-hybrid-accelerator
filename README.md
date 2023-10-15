@@ -1,6 +1,6 @@
 # Ansible playbooks to deploy Apigee Hybrid using Helm Charts
 
-This repository contains a set of Ansible roles and playbooks to manage the installation, configuration and maintenance of Apigee Hybrid in your environment. Apigee Hybrid components are managed using helm charts through ansible roles.Apigee Hybrid combines the power of Apigee's API management with the flexibility and control of Kubernetes. With this playbooks, you can automate common Apigee Hybrid management tasks, making it easier to deploy, configure, and maintain your Apigee Hybrid instances.
+This repository contains a set of Ansible roles and playbooks to manage the installation, configuration and maintenance of Apigee Hybrid in your environment. Apigee Hybrid components are managed using helm charts through ansible roles.Apigee Hybrid combines the power of Apigee's API management with the flexibility and control of Kubernetes. With this playbooks, you can automate common Apigee Hybrid management tasks, making it easier to deploy, configure, and maintain your Apigee Hybrid clusters.
 
 
 > Refer the [official doc](https://cloud.google.com/apigee/docs/hybrid/preview/helm-install) for more details on Helm charts for Apigee Hybrid.
