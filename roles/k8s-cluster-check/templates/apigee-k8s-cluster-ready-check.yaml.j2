@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: apigee-k8s-cluster-ready-check
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: apigee-k8s-cluster-ready-check
+spec:
+  template:
+    spec:
+      hostNetwork: true
+      serviceAccountName: apigee-k8s-cluster-ready-check
+      containers:
+        - name: manager
+          image: {{ overrides.ao.image.url }}:{{ overrides.ao.image.tag }}
+          command:
+            - /manager
+          args:
+          - --k8s-cluster-ready-check
+          env:
+          - name: POD_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+          securityContext:
+            runAsGroup: 998
+            runAsNonRoot: true
+            runAsUser: 999
+      restartPolicy: Never
+  backoffLimit: 1
