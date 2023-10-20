@@ -25,6 +25,7 @@
   - dc1
   roles:
   - { role: validate-input, tags: ['validate-input'] }
+  - { role: apigee-control-plane-check, tags: ['validate-apigee-mgmt'] }
   - { role: cert-manager, tags: ['cert-manager'] }
   - { role: certificates, vars: { generate_certificates: true }, tags: ['certs'] }
   - { role: prepare-helm, tags: ['prepare-helm'] }
@@ -108,6 +109,7 @@
   - dc2
   roles:
   - { role: validate-input, tags: ['validate-input'] }
+  - { role: apigee-control-plane-check, tags: ['validate-apigee-mgmt'] }
   - { role: cert-manager, tags: ['cert-manager'] }
   - { role: kubectl-ops, vars: { operation: get, k8s_resource_type: namespace, k8s_resource: apigee, kubectl_args: '--kubeconfig {{ kubeconfigs.primary }} -o yaml > {{ setup_path }}/apigee-namespace.yaml'}, tags: ['dc2-prereq'] }
   - { role: kubectl-ops, vars: { operation: get, k8s_resource_type: secret, k8s_resource: apigee-ca, k8s_namespace: cert-manager, kubectl_args: '--kubeconfig {{ kubeconfigs.primary }} -o yaml > {{ setup_path }}/apigee-ca.yaml'}, tags: ['dc2-prereq'] }
