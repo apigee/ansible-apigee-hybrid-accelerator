@@ -13,6 +13,11 @@
 # limitations under the License.
 ---
 # tasks file for bootstrap-apigee-crds
+- name: setup directory exists
+  file:
+    path: "{{ setup_path }}"
+    state: directory
+
 - name: Dry-run (apply)
   shell: >
     kubectl apply -k \

@@ -13,6 +13,11 @@
 # limitations under the License.
 ---
 # tasks file for certificates
+- name: setup directory exists
+  file:
+    path: "{{ setup_path }}"
+    state: directory
+
 - name: Create SSL Certificate and Secrets
   block:
   - name: Certificates directory exists

@@ -13,6 +13,11 @@
 # limitations under the License.
 ---
 # tasks file for setup-cassandra-data-replication
+- name: setup directory exists
+  file:
+    path: "{{ setup_path }}"
+    state: directory
+
 - name: Get existing Apigee org
   kubernetes.core.k8s_info:
     api_version: "{{ apigee_org_crd_api_version }}"

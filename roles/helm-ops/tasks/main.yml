@@ -13,6 +13,11 @@
 # limitations under the License.
 ---
 # tasks file for helm-ops
+- name: setup directory exists
+  file:
+    path: "{{ setup_path }}"
+    state: directory
+
 - name: Deploy {{ chart_ref }} 
   kubernetes.core.helm:
     name: "{{ release_name }}"
