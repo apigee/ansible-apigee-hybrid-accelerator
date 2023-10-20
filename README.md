@@ -25,9 +25,8 @@ You can use the Apigee terraform [module](https://github.com/GoogleCloudPlatform
 ##### Manual packages to install
 You can follow manual steps  to install the below packages
 
-- `python3 -m pip install requests==2.25.1 jsonschema==4.19.1 jsonschema-specifications==2023.7.1`
+- `python3 -m pip install requests==2.25.1 jsonschema==4.19.1 jsonschema-specifications==2023.7.1 ansible-core==2.15.5 ansible==8.5.0`
 - `helm >3.10`  refer https://helm.sh/docs/intro/install/
-- `ansible >=2.1`  refer https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html
 - `gcloud cli`   refer https://cloud.google.com/sdk/docs/install
 - `kubectl`  refer https://cloud.google.com/sdk/docs/components#installing_components
 
