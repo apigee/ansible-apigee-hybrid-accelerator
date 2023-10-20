@@ -17,6 +17,7 @@
 setup_path: "/tmp"
 
 # Set `cert_manager_version: : v1.7.2` refer: https://cloud.google.com/apigee/docs/hybrid/v1.10/install-cert-manager
+install_cert_manager: false
 cert_manager_version: v1.7.2
 
 ################################################ TLS certificate details ################################################
