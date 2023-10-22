@@ -1,0 +1,463 @@
+# Copyright 2023 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+---
+# Path to download/generate files
+setup_path: "/tmp/new"
+
+# Set `cert_manager_version: : v1.7.2` refer: https://cloud.google.com/apigee/docs/hybrid/v1.10/install-cert-manager
+cert_manager_version: v1.7.2
+
+################################################ TLS certificate details ################################################
+
+# Set `generate_certificates: true`` to generate self signed certifcates
+# This will also create the K8s secrets to referece in overrides.yaml unless overidden below
+generate_certificates: false
+
+# Set this only when `generate_certificates: true`
+# Use `cert_cn` to set certifcate CN
+# cert_cn: apigee.com
+
+################################################ TLS certificate details ################################################
+
+################################################ Service Account details ################################################
+
+# Set to true to download service accounts JSON and create K8s Secrets
+create_service_account: false
+
+# Set this only when `create_service_account: true`
+# Set to  `prod` OR `non-prod` to generate service accounts based on https://cloud.google.com/apigee/docs/hybrid/v1.10/sa-about#recommended-sas
+deployment_environment: prod
+
+# Set this only when `create_service_account: false`
+# Set the Synchronizer service account to run https://cloud.google.com/apigee/docs/hybrid/v1.10/install-enable-synchronizer-access
+synchronizer_prod_svc_account: apigee-synchronizer
+
+################################################ Service Account details ################################################
+
+################################################ Helm details ################################################
+# refer: https://cloud.google.com/apigee/docs/hybrid/preview/helm-install#pull-apigee-helm-charts
+
+helm_chart_repo: oci://us-docker.pkg.dev/apigee-release/apigee-hybrid-helm-charts
+helm_chart_version: 1.10.3
+helm_charts:
+- apigee-operator
+- apigee-datastore
+- apigee-env
+- apigee-ingress-manager
+- apigee-org
+- apigee-redis
+- apigee-telemetry
+- apigee-virtualhost
+
+################################################helm details ################################################
+
+################################################Kubeconfigs ################################################
+
+kubeconfigs:
+  # set `primary: <Path to kubeconfig of K8s cluster>` to deploy Apigee Hybrid Primary DC
+  primary: /Users/ashwinknaik/.kube/config
+  # set `secondary: <Path to kubeconfig of K8s cluster>` to deploy Apigee Hybrid Secondary DC
+  # secondary: /tmp/dc2.config
+
+################################################Kubeconfigs ################################################
+
+################################################Post Setup Validation Details ################################################
+
+internet_access: true
+validate_api_redeploy: false
+
+################################################Post Setup Validation Details ################################################
+
+################################################Apigee Hybrid Helm Values ################################################
+
+## To fill this section refer the https://cloud.google.com/apigee/docs/hybrid/v1.10/config-prop-ref
+
+overrides:
+  k8sCluster:
+    name: apigee-hybrid-cluster1
+    region: europe-west1
+  #
+  # The closet GCP region of the k8s cluster
+  #
+  # NOTE: StackDriver (SD) does not provide logging regionalization yet: go/logging-regionalization
+  # but the region is still required as it is one of the mandatory labels that the logs are tagged
+  # with when pushed to SD.
+  #
+  # Currently, projectID and projectIDRuntime are being used by the apigee-logger and the apigee-metrics
+  # to push their data in the below specific GCP project with the cluster name and the GCP region. The
+  # projectIDRuntime property is optional. If not used, it is assumed that projectID value is
+  # used for both the Apigee organization's GCP project and the runtime K8S cluster's project.
+  #
+  gcp:
+    region: europe-west1
+    projectID: ci-cloud-workflow-0206
+  revision: "1103"
+  instanceID: "xxx-xxx-xxx-xxx"
+  #
+  # For Telemetry support for Multi-Org cluster. The feature is disabled by default.
+  # Enabling this flag will export the metrics from Multi-Org cluster to the
+  # "gcp.projectID" overrides.yaml configuration.
+  #
+  multiOrgCluster: false
+  #
+  # k8s secret name to use for pulling the docker images.
+  #
+  imagePullSecrets: 
+
+  # httpProxy:
+    # host: 172.23.3.99
+    # port: 8080
+    # scheme: HTTP
+
+
+  nodeSelector:
+    requiredForScheduling: true
+    apigeeRuntime:
+      key: "cloud.google.com/gke-nodepool"
+      value: "runtime"
+    apigeeData:
+      key: "cloud.google.com/gke-nodepool"
+      value: "data"
+  #
+  # Enables strict validation of service account permissions. This uses Cloud Resource Manager API
+  # method "testIamPermissions" to verify that the provided service account has the required
+  # permissions. In the case of service accounts for an Apigee Org, the project ID check is the one
+  # mapped to the Organization. For Metrics and Logger, the project checked is based on the
+  # "gcp.projectID" overrides.yaml configuration.
+  validateServiceAccounts: true
+  #
+  # Enables strict validation for the link between the Apigee Org and GCP project, as well
+  # as if the environment groups already exist.
+  validateOrg: true
+  #
+  # Enables org scoped UDCA deployment rather than the per-environment UDCA deployment model
+  orgScopedUDCA: true
+
+  virtualhosts:
+  - name: test1
+    # selector:
+      # app1: apigee-ingressgateway
+    # tlsMode: MUTUAL
+    sslSecret: test1-tls-secret
+    hostnames:
+    - test1.api.example.com
+
+  - name: test2
+    selector:
+      # app1: apigee-ingressgateway
+    sslSecret: test2-tls-secret
+    hostnames:
+    - test2.api.example.com
+
+  - name: test3
+    selector:
+      # app1: apigee-ingressgateway
+    sslSecret: test3-tls-secret
+    hostnames:
+    - test3.api.example.com
+
+  envs:
+  - name: test1
+    synchronizer:
+      replicaCountMin: 1
+      replicaCountMax: 4
+    runtime:
+      replicaCountMax: 3
+
+  - name: test2
+  - name: test3
+
+  mart:
+    serviceAccountRef: apigee-mart-custom-secret
+    replicaCountMin: 1
+    replicaCountMax: 2
+    image:
+      url: "gcr.io/apigee-release/hybrid/apigee-mart-server"
+      tag: "1.10.3"
+      pullPolicy: IfNotPresent
+    resources:
+      requests:
+        cpu: 500m
+        memory: 512Mi
+
+  mintTaskScheduler:
+    image:
+      url: "gcr.io/apigee-release/hybrid/apigee-mint-task-scheduler"
+      tag: "1.10.3"
+      pullPolicy: IfNotPresent
+    resources:
+      requests:
+        cpu: 500m
+        memory: 512Mi
+  #
+  # Apigee Sychronizer.
+  #
+  synchronizer:
+    replicaCountMin: 1
+    replicaCountMax: 4
+    serviceAccountRef: apigee-synchronizer-custom-secret 
+    image:
+      url: "gcr.io/apigee-release/hybrid/apigee-synchronizer"
+      tag: "1.10.3"
+      pullPolicy: IfNotPresent
+    resources:
+      requests:
+        cpu: 100m
+        memory: 512Mi
+  #
+  # Apigee Runtime.
+  #
+  runtime:
+    serviceAccountRef: apigee-runtime-custom-secret
+    replicaCountMin: 1
+    replicaCountMax: 4
+    image:
+      url: "gcr.io/apigee-release/hybrid/apigee-runtime"
+      tag: "1.10.3"
+      pullPolicy: IfNotPresent
+    resources:
+      requests:
+        cpu: 500m
+        memory: 512Mi
+  #
+  # Apigee Cassandra.
+  #
+  cassandra:
+    hostNetwork: false
+    auth:
+      secret: ""
+      image:
+        url: "gcr.io/apigee-release/hybrid/apigee-hybrid-cassandra-client"
+        tag: "1.10.3"
+        pullPolicy: IfNotPresent
+    replicaCount: 3
+    # multiRegionSeedHost:
+    storage:
+      storageclass:
+      capacity: 10Gi
+    image:
+      url: "gcr.io/apigee-release/hybrid/apigee-hybrid-cassandra"
+      tag: "1.10.3"
+      pullPolicy: IfNotPresent
+    resources:
+      requests:
+        cpu: 500m
+        memory: 1Gi
+    maxHeapSize: 512M
+    heapNewSize: 100M
+    # datacenter: "dc-1"
+    backup:
+      enabled: false
+      image:
+        url: "gcr.io/apigee-release/hybrid/apigee-cassandra-backup-utility"
+        tag: "1.10.3"
+        pullPolicy: IfNotPresent
+      serviceAccountRef: apigee-cassandra-custom-secret
+      schedule: "0 2 * * *"
+      dbStorageBucket:
+    restore:
+      enabled: false
+      snapshotTimestamp:
+      image:
+        url: "gcr.io/apigee-release/hybrid/apigee-cassandra-backup-utility"
+        tag: "1.10.3"
+        pullPolicy: IfNotPresent
+      serviceAccountRef: apigee-cassandra-custom-secret
+      dbStorageBucket: ""
+  #
+  # Apigee UDCA.
+  #
+  udca:
+    serviceAccountRef: apigee-udca-custom-secret
+    replicaCountMin: 1
+    replicaCountMax: 4
+    image:
+      url: "gcr.io/apigee-release/hybrid/apigee-udca"
+      tag: "1.10.3"
+      pullPolicy: IfNotPresent
+    resources:
+      requests:
+        cpu: 250m
+        memory: 256Mi
+    fluentd:
+      image:
+        url: "gcr.io/apigee-release/hybrid/apigee-stackdriver-logging-agent"
+        tag: "1.9.12-2"
+        pullPolicy: IfNotPresent
+      resources:
+        limits:
+          memory: 500Mi
+        requests:
+          cpu: 500m
+          memory: 250Mi
+  #
+  # Hybrid container logger.
+  #
+  logger:
+    enabled: false
+    terminationGracePeriodSeconds: 30
+    image:
+      url: "gcr.io/apigee-release/hybrid/apigee-fluent-bit"
+      tag: "2.1.8"
+      pullPolicy: IfNotPresent
+    serviceAccountRef: apigee-logger-custom-secret
+    resources:
+      limits:
+        cpu: 200m
+        memory: 500Mi
+      requests:
+        cpu: 100m
+        memory: 250Mi
+    proxyURL:
+  #
+  # Apigee Metrics.
+  #
+  metrics:
+    enabled: true
+    serviceAccountRef: apigee-metrics-custom-secret
+    appStackdriverExporter:
+      resources:
+        limits:
+          cpu: 500m
+          memory: 1Gi
+        requests:
+          cpu: 128m
+          memory: 512Mi
+    proxyStackdriverExporter:
+      resources:
+        limits:
+          cpu: 500m
+          memory: 1Gi
+        requests:
+          cpu: 128m
+          memory: 512Mi
+    adapter:
+      image:
+        url: "gcr.io/apigee-release/hybrid/apigee-prometheus-adapter"
+        tag: "v0.11.0"
+        pullPolicy: IfNotPresent
+      serviceAccountRef: apigee-metrics-custom-secret
+    prometheus:
+      image:
+        url: "gcr.io/apigee-release/hybrid/apigee-prom-prometheus"
+        tag: "v2.45.0"
+        pullPolicy: IfNotPresent
+    sdSidecar:
+      image:
+        url: "gcr.io/apigee-release/hybrid/apigee-stackdriver-prometheus-sidecar"
+        tag: "0.9.0"
+        pullPolicy: IfNotPresent
+    proxyURL:
+  # Apigee Connect Agent
+  connectAgent:
+    serviceAccountRef: apigee-mart-custom-secret 
+    image:
+      url: "gcr.io/apigee-release/hybrid/apigee-connect-agent"
+      tag: "1.10.3"
+      pullPolicy: IfNotPresent
+    replicaCountMin: 1
+    replicaCountMax: 1
+    resources:
+      requests:
+        cpu: 200m
+        memory: 128Mi
+  # Apigee Watcher
+  watcher:
+    serviceAccountRef: apigee-watcher-custom-secret 
+    image:
+      url: "gcr.io/apigee-release/hybrid/apigee-watcher"
+      tag: "1.10.3"
+      pullPolicy: IfNotPresent
+    replicaCountMin: 1
+    replicaCountMax: 1
+    resources:
+      requests:
+        cpu: 200m
+        memory: 128Mi
+  # Apigee Redis
+  redis:
+    image:
+      url: "gcr.io/apigee-release/hybrid/apigee-redis"
+      tag: "1.10.3"
+      pullPolicy: IfNotPresent
+    replicaCount: 2
+    resources:
+      requests:
+        cpu: 500m
+    envoy:
+      image:
+        url: "gcr.io/apigee-release/hybrid/apigee-envoy"
+        tag: "v1.27.0"
+        pullPolicy: IfNotPresent
+      replicaCountMin: 1
+      replicaCountMax: 1
+      resources:
+        requests:
+          cpu: "500m"
+  # Apigee Operators controller
+  ao:
+    image:
+      url: "gcr.io/apigee-release/hybrid/apigee-operators"
+      tag: "1.10.3"
+      pullPolicy: IfNotPresent
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 1024Mi
+      requests:
+        cpu: 200m
+        memory: 512Mi
+    installer:
+      image:
+        url: "gcr.io/apigee-release/hybrid/apigee-installer"
+        tag: "1.10.3"
+        pullPolicy: IfNotPresent
+  # kube rbac proxy
+  kubeRBACProxy:
+    image:
+      url: "gcr.io/apigee-release/hybrid/apigee-kube-rbac-proxy"
+      tag: "v0.14.2"
+      pullPolicy: IfNotPresent
+
+  # Apigee istiod.
+  istiod:
+    image:
+      url: "gcr.io/apigee-release/hybrid/apigee-asm-istiod"
+      tag: "1.17.2-asm.8-distroless"
+      pullPolicy: IfNotPresent
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 1024Mi
+      requests:
+        cpu: 200m
+        memory: 512Mi
+    accessLogFile: '/dev/stdout'
+    accessLogFormat: '{"start_time":"%START_TIME%","remote_address":"%DOWNSTREAM_DIRECT_REMOTE_ADDRESS%","user_agent":"%REQ(USER-AGENT)%","host":"%REQ(:AUTHORITY)%","request":"%REQ(:METHOD)% %REQ(X-ENVOY-ORIGINAL-PATH?:PATH)% %PROTOCOL%","request_time":"%DURATION%","status":"%RESPONSE_CODE%","status_details":"%RESPONSE_CODE_DETAILS%","bytes_received":"%BYTES_RECEIVED%","bytes_sent":"%BYTES_SENT%","upstream_address":"%UPSTREAM_HOST%","upstream_response_flags":"%RESPONSE_FLAGS%","upstream_response_time":"%RESPONSE_DURATION%","upstream_service_time":"%RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)%","upstream_cluster":"%UPSTREAM_CLUSTER%","x_forwarded_for":"%REQ(X-FORWARDED-FOR)%","request_method":"%REQ(:METHOD)%","request_path":"%REQ(X-ENVOY-ORIGINAL-PATH?:PATH)%","request_protocol":"%PROTOCOL%","tls_protocol":"%DOWNSTREAM_TLS_VERSION%","request_id":"%REQ(X-REQUEST-ID)%","sni_host":"%REQUESTED_SERVER_NAME%","apigee_dynamic_data":"%DYNAMIC_METADATA(envoy.lua)%"}'
+  # Apigee Ingressgateway.
+  ingressGateway:
+    image:
+      url: "gcr.io/apigee-release/hybrid/apigee-asm-ingress"
+      tag: "1.17.2-asm.8-distroless"
+      pullPolicy: IfNotPresent
+    resources:
+      limits:
+        cpu: 2000m
+        memory: 1Gi
+      requests:
+        cpu: 300m
+        memory: 128Mi
+
+################################################Apigee Hybrid Helm Values ############

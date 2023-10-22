@@ -68,7 +68,7 @@ def main():
     apigee_vhosts = input_data.get('virtualhosts',[])
     apigee_node_selector = input_data.get('nodeSelector',{}).get(
         'requiredForScheduling',False)
-    secret_namespace = 'apigee'
+    apigee_namespace = 'apigee'
     validations = []
     api_server_reachable = check_api_server()
     if not api_server_reachable:
@@ -89,19 +89,20 @@ def main():
         if not check_nodes(f"{apigee_data_node_selector_key}={apigee_data_node_selector_value}"):
             validations.append(f"Number of nodes with selectors {apigee_data_node_selector_key}={apigee_data_node_selector_value} are Zero[0]")
 
-    apigee_secrets = list_namespace_secrets(secret_namespace)
+    apigee_secrets = list_namespace_secrets(apigee_namespace)
+    _key_ref = 'sslSecret'
     if args.generate_certificates == 'False':
         for apigee_vhost in apigee_vhosts:
-            if apigee_vhost['sslSecret'] not in apigee_secrets:
-                validations.append(f"SSL Secret: {apigee_vhost['sslSecret']} Not found in {secret_namespace} namespace")
+            if apigee_vhost[_key_ref] not in apigee_secrets:
+                validations.append(f"SSL Secret: {apigee_vhost[_key_ref]} Not found in {apigee_namespace} namespace")
 
     if args.create_service_account == 'False':
-        input_service_account_secrets = []
-        _finditem(input_data,'serviceAccountRef',input_service_account_secrets)
+        input_service_accounts = []
+        _finditem(input_data,'serviceAccountRef',input_service_accounts)
 
-        for each_sa_secret in input_service_account_secrets:
-            if each_sa_secret not in apigee_secrets:
-                validations.append(f"Service Account Secret: {each_sa_secret} Not found in {secret_namespace} namespace")
+        for each_sa in input_service_accounts:
+            if each_sa not in apigee_secrets:
+                validations.append(f"Service Account Secret: {each_sa} Not found in {apigee_namespace} namespace")
 
     if len(validations) > 0:
         print('Kubernetes validation Errors found !')
