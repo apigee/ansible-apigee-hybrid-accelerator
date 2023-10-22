@@ -18,7 +18,7 @@
     path: "{{ setup_path }}"
     state: directory
 
-- name: Create SSL Certificate and Secrets
+- name: Create Service Account Secrets
   block:
   - name: Create service-accounts directory
     file:

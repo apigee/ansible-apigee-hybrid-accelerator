@@ -17,6 +17,7 @@
       --input_data '{{ overrides_string }}' \
       --access_token {{ access_token.stdout }}
     register: validate_control_plane
+
   - name: Check validate_control_plane operation output
     debug:
       msg: "{{ validate_control_plane }}"
@@ -26,7 +27,7 @@
     debug:
       msg: "{{ validate_control_plane }}"
 
-  - name: Fail Control Plane validation
+  - name: Fail validation
     fail:
       msg: |
         apigee-control-plane Validation Failed .

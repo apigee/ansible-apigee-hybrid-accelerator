@@ -1,0 +1,4 @@
+---
+# defaults file for apigee-control-plane-check
+control_plane_validation_status: true
+k8s_validation_status: true

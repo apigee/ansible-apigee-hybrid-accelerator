@@ -79,6 +79,8 @@ generate-overrides | Generate Apigee Overrides
 prepare-helm | Download Apigee Hybrid Helm charts
 prepare-service-accounts | Create Service Keys & K8s Secrets
 validate-input | Validates the inputs given to the playbook
+validate-input-apigee | Validates the existence of apigee objects using the apigee.googleapis.com API
+validate-input-k8s | Validates the existence of kubernetes objects using given kubeconfig
 validate | Validate Apigee Hybrid By deploying & invoking mock API
 wait_ao | Wait for apigee-operator to be up
 wait_apigeeenv | Wait for apigee enviornment custom resource to be running
