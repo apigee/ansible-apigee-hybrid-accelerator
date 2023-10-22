@@ -57,13 +57,6 @@
       privatekey_path: "{{ setup_path }}/{{ item.item.key }}/certificate.key"
       provider: selfsigned
     loop: "{{ csr.results }}"
-  
-  # - name: create secret
-  #   shell: >
-  #     kubectl create -n {{ tls_namespace }} secret tls tls-hybrid-ingress-{{ item.item.key }}  \
-  #       --key={{ setup_path }}/{{ item.item.key }}/certificate.key \
-  #       --cert={{ setup_path }}/{{ item.item.key }}/certificate.pem
-  #   loop: "{{ csr.results }}"
 
   - name: Read certificate 
     slurp: 
@@ -76,34 +69,6 @@
       src: "{{ setup_path }}/{{ item.name }}/certificate.key"
     register: privatekey_output
     loop: "{{ overrides.virtualhosts }}"
-
-  # - name: certificate_output
-  #   debug: 
-  #     msg: "{{ certificate_output.results| json_query(j_query) }}"
-  #   with_dict: "{{ apigee_envgroups }}"
-  #   vars:
-  #     j_query: "[?item.key=='{{ item.key }}'].content"
-
-  # - name: privatekey_output
-  #   debug: 
-  #     msg: "{{ privatekey_output.results| json_query(j_query) }}"
-  #   with_dict: "{{ apigee_envgroups }}"
-  #   vars:
-  #     j_query: "[?item.key=='{{ item.key }}'].content"
-
-  # - name: Generate SAN list
-  #   set_fact: 
-  #     hosts_tls: "{{ hosts_tls | default({}) | combine ({ item.key : { 'crt': certificate_output.results| json_query(j_query), 'key':  privatekey_output.results| json_query(j_query)  } }) }}"
-  #   with_dict: "{{ apigee_envgroups }}"
-  #   vars:
-  #     j_query: "[?item.key=='{{ item.key }}'].content"
-  
-  # - name: privatekey_output
-  #   debug: 
-  #     msg: "{{ hosts_tls }}"
-  #   # with_dict: "{{ apigee_envgroups }}"
-  #   # vars:
-  #   #   j_query: "[?item.key=='{{ item.key }}'].content"
 
   - name: Create apigee namespace
     kubernetes.core.k8s:
@@ -121,7 +86,6 @@
         apiVersion: v1
         kind: Secret
         metadata:
-          # name: "tls-hybrid-ingress-{{ item.name }}"
           name: "{{ item.sslSecret if item.sslSecret else item.name+\"-ssl-secret\" }}"
           namespace: "{{ tls_namespace }}"
         type: kubernetes.io/tls
