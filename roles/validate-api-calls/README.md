@@ -1,38 +1,68 @@
-Role Name
+Post Setup Validation of Apigee Hybrid
 =========
 
-A brief description of the role goes here.
+This role verify the Apigee Hybrid setup by deploying sample API proxies.
+
+This role deploys the APIs into Apigee Hybrid using the [script](./files/deploy_api.py) and fetches the Apigee ingress IP deploy and uses curl to invoke an API. 
 
 Requirements
 ------------
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+This role uses the below ansible modules
+* [file_module](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/file_module.html)
+* [uri_module](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/uri_module.html)
+* [script_module](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/script_module.html)
+* [shell_module](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/shell_module.html)
+* [debug_module](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/debug_module.html)
+* [set_fact_module](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/set_fact_module.html)
 
 Role Variables
 --------------
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+This takes in the below variables
+```
+setup_path: "~"
+internet_access: true
+validate_api_redeploy: false
+internet_apis:
+- mock
+- mock-internal
+internal_apis:
+- mock-internal
+```
 
 Dependencies
 ------------
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+N/A
 
 Example Playbook
 ----------------
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
+Below is an example of the usage of the role
 
-    - hosts: servers
+    - hosts: localhost
       roles:
-         - { role: username.rolename, x: 42 }
+        - { role: validate-api-calls, tags: ['validate'] }
+
 
 License
 -------
 
-BSD
+Apache 2.0
 
 Author Information
 ------------------
 
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+Ashwin Kumar Naik
+<!-- BEGIN Google How To Contribute -->
+# How to Contribute
+
+We'd love to accept your patches and contributions to this project. Please review our [guidelines](../../CONTRIBUTING.md).
+<!-- END Google How To Contribute -->
+<!-- BEGIN Google Required Disclaimer -->
+
+# Not Google Product Clause
+
+This is not an officially supported Google product.
+<!-- END Google Required Disclaimer -->

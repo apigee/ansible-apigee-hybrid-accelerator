@@ -1,38 +1,78 @@
-Role Name
+Helm Release Management using Helm Ops
 =========
 
-A brief description of the role goes here.
+This role helps in creating/updating/uninstalling a helm release.
 
 Requirements
 ------------
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+This role uses the below ansible modules
+* [file_module](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/file_module.html)
+* [helm_module](https://docs.ansible.com/ansible/latest/collections/kubernetes/core/helm_module.html)
 
 Role Variables
 --------------
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+This takes in the below variables
+```
+setup_path: "~"
+custom_values: false
+loop_values: false
+set_values: []
+release_namespace: apigee
+create_namespace: false
+release_state: present
+```
 
 Dependencies
 ------------
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+N/A
 
 Example Playbook
 ----------------
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
+Below is an example of the usage of the role
 
-    - hosts: servers
+    - hosts: localhost
       roles:
-         - { role: username.rolename, x: 42 }
+        - { role: helm-ops, vars: { release_name: 'datastore', chart_ref: 'apigee-datastore'}, tags: ['ds', 'apigeeds'] }
+
+
+
+Below is an example of the usage of the role with custom values
+
+      - name: deploy environment-group
+        include_role: {name: helm-ops, apply: { tags: apigee-virtualhost }}
+        vars:
+          release_name: "{{ item.name }}"
+          chart_ref: 'apigee-virtualhost'
+          custom_values: true
+          set_values: 
+          - value: "envgroup={{ item.name }}"
+            value_type: string
+        loop: "{{ overrides.virtualhosts }}"
+        tags: ['apigee-virtualhost']
+
+
 
 License
 -------
 
-BSD
+Apache 2.0
 
 Author Information
 ------------------
 
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+Ashwin Kumar Naik
+<!-- BEGIN Google How To Contribute -->
+# How to Contribute
+
+We'd love to accept your patches and contributions to this project. Please review our [guidelines](../../CONTRIBUTING.md).
+<!-- END Google How To Contribute -->
+<!-- BEGIN Google Required Disclaimer -->
+
+# Not Google Product Clause
+
+This is not an officially supported Google product.
+<!-- END Google Required Disclaimer -->

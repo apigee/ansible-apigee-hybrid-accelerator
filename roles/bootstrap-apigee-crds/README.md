@@ -1,38 +1,55 @@
-Role Name
+Bootstrap Apigee Custom Resource Definitions
 =========
 
-A brief description of the role goes here.
+This role creates the Apigee Custom Resource Definitions.Refer [this](https://cloud.google.com/apigee/docs/hybrid/kubernetes-resources#apigee:) to check the list of CRDs.
 
 Requirements
 ------------
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+This role uses the below ansible modules
+* [file_module](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/file_module.html)
+* [shell_module](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/shell_module.html)
+* [async_status_module](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/async_status_module.html)
+* [debug_module](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/debug_module.html)
 
 Role Variables
 --------------
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+This takes in all the variables as given in the [vars](../../vars/vars.yaml)
 
 Dependencies
 ------------
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+This role depends on below roles
+*  [prepare-helm](../prepare-helm/)
 
 Example Playbook
 ----------------
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
+Below is an example of the usage of the role
 
-    - hosts: servers
+    - hosts: localhost
       roles:
-         - { role: username.rolename, x: 42 }
+          - { role: prepare-helm, tags: ['prepare-helm'] }
+          - { role: bootstrap-apigee-crds, tags: ['bootstrap-apigee-crds'] }
 
 License
 -------
 
-BSD
+Apache 2.0
 
 Author Information
 ------------------
 
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+Ashwin Kumar Naik
+<!-- BEGIN Google How To Contribute -->
+# How to Contribute
+
+We'd love to accept your patches and contributions to this project. Please review our [guidelines](../../CONTRIBUTING.md).
+<!-- END Google How To Contribute -->
+<!-- BEGIN Google Required Disclaimer -->
+
+# Not Google Product Clause
+
+This is not an officially supported Google product.
+<!-- END Google Required Disclaimer -->
