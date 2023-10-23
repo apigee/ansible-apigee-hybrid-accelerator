@@ -33,9 +33,9 @@
         release_state: absent
         chart_ref: 'apigee-env'
         custom_values: true
-        set_values: 
-        - value: "env={{ item.name }}"
-          value_type: string
+        set_values:
+          - value: "env={{ item.name }}"
+            value_type: string
       loop: "{{ overrides.envs }}"
       tags: ['apigeeenv']
 
@@ -46,9 +46,9 @@
         chart_ref: 'apigee-virtualhost'
         release_state: absent
         custom_values: true
-        set_values: 
-        - value: "envgroup={{ item.name }}"
-          value_type: string
+        set_values:
+          - value: "envgroup={{ item.name }}"
+            value_type: string
       loop: "{{ overrides.virtualhosts }}"
       tags: ['apigee-virtualhost']
 
@@ -61,19 +61,19 @@
   vars:
     cassandra_dc: dc-2
   tags:
-  - dc2
+    - dc2
   roles:
-  - { role: apigee-hybrid-overrides, tags: ['generate-overrides'] }
-  - { role: helm-ops, vars: { release_name: '{{ overrides.gcp.projectID }}',chart_ref: 'apigee-org', release_state: absent }, tags: ['apigeeorg', 'apigeeorgs'] }
-  - { role: helm-ops, vars: { release_name: 'datastore', chart_ref: 'apigee-datastore', release_state: absent }, tags: ['ds', 'apigeeds'] }
-  - { role: helm-ops, vars: { release_name: 'telemetry', chart_ref: 'apigee-telemetry', release_state: absent  }, tags: ['at', 'apigeetelem'] }
-  - { role: helm-ops, vars: { release_name: 'redis', chart_ref: 'apigee-redis', release_state: absent  }, tags: ['apigeeredis'] }
-  - { role: helm-ops, vars: { release_name: 'ingress-manager', chart_ref: 'apigee-ingress-manager', release_state: absent  }, tags: ['apigeeingress'] } 
-  - { role: helm-ops, vars: { release_name: 'operator', chart_ref: 'apigee-operator', release_namespace: 'apigee-system', create_namespace: true, release_state: absent }, tags: ['ao'] }
-  - { role: cert-manager, vars: { cert_manager_status: absent }, tags: ['cert-manager'] }
-  - { role: kubectl-ops, vars: { operation: patch, k8s_resource_type: ApigeeDatastore, k8s_resource: default, k8s_namespace: apigee, kubectl_args: "-p '{\"metadata\":{\"finalizers\":[]}}' --type=merge"}, tags: ['ds-decomm'] }
-  - { role: kubectl-ops, vars: { operation: delete, k8s_resource_type: namespace, k8s_resource: apigee, kubectl_args: '--ignore-not-found=true' }, tags: ['ns-decomm'] }
-  - { role: kubectl-ops, vars: { operation: delete, k8s_resource_type: namespace, k8s_resource: apigee-system, kubectl_args: '--ignore-not-found=true' }, tags: ['ns-decomm'] }
+    - { role: apigee-hybrid-overrides, tags: ['generate-overrides'] }
+    - { role: helm-ops, vars: { release_name: '{{ overrides.gcp.projectID }}', chart_ref: 'apigee-org', release_state: absent }, tags: ['apigeeorg', 'apigeeorgs'] }
+    - { role: helm-ops, vars: { release_name: 'datastore', chart_ref: 'apigee-datastore', release_state: absent }, tags: ['ds', 'apigeeds'] }
+    - { role: helm-ops, vars: { release_name: 'telemetry', chart_ref: 'apigee-telemetry', release_state: absent  }, tags: ['at', 'apigeetelem'] }
+    - { role: helm-ops, vars: { release_name: 'redis', chart_ref: 'apigee-redis', release_state: absent  }, tags: ['apigeeredis'] }
+    - { role: helm-ops, vars: { release_name: 'ingress-manager', chart_ref: 'apigee-ingress-manager', release_state: absent  }, tags: ['apigeeingress'] }
+    - { role: helm-ops, vars: { release_name: 'operator', chart_ref: 'apigee-operator', release_namespace: 'apigee-system', create_namespace: true, release_state: absent }, tags: ['ao'] }
+    - { role: cert-manager, vars: { cert_manager_status: absent }, tags: ['cert-manager'] }
+    - { role: kubectl-ops, vars: { operation: patch, k8s_resource_type: ApigeeDatastore, k8s_resource: default, k8s_namespace: apigee, kubectl_args: "-p '{\"metadata\":{\"finalizers\":[]}}' --type=merge"}, tags: ['ds-decomm'] }
+    - { role: kubectl-ops, vars: { operation: delete, k8s_resource_type: namespace, k8s_resource: apigee, kubectl_args: '--ignore-not-found=true' }, tags: ['ns-decomm'] }
+    - { role: kubectl-ops, vars: { operation: delete, k8s_resource_type: namespace, k8s_resource: apigee-system, kubectl_args: '--ignore-not-found=true' }, tags: ['ns-decomm'] }
 
 
 - name: Decomission Apigee Hybrid primary DC environment & virtualhost
@@ -85,9 +85,9 @@
   vars:
     cassandra_dc: dc-1
   tags:
-  - dc1
+    - dc1
   roles:
-  - { role: apigee-hybrid-overrides, tags: ['generate-overrides'] }
+    - { role: apigee-hybrid-overrides, tags: ['generate-overrides'] }
   tasks:
     - name: un-deploy environment
       include_role: { name: helm-ops, apply: { tags: apigeeenv } }
@@ -96,9 +96,9 @@
         release_state: absent
         chart_ref: 'apigee-env'
         custom_values: true
-        set_values: 
-        - value: "env={{ item.name }}"
-          value_type: string
+        set_values:
+          - value: "env={{ item.name }}"
+            value_type: string
       loop: "{{ overrides.envs }}"
       tags: ['apigeeenv']
 
@@ -109,9 +109,9 @@
         chart_ref: 'apigee-virtualhost'
         release_state: absent
         custom_values: true
-        set_values: 
-        - value: "envgroup={{ item.name }}"
-          value_type: string
+        set_values:
+          - value: "envgroup={{ item.name }}"
+            value_type: string
       loop: "{{ overrides.virtualhosts }}"
       tags: ['apigee-virtualhost']
 
@@ -124,16 +124,16 @@
   vars:
     cassandra_dc: dc-1
   tags:
-  - dc1
+    - dc1
   roles:
-  - { role: apigee-hybrid-overrides, tags: ['generate-overrides'] }
-  - { role: helm-ops, vars: { release_name: '{{ overrides.gcp.projectID }}',chart_ref: 'apigee-org', release_state: absent }, tags: ['apigeeorg', 'apigeeorgs'] }
-  - { role: helm-ops, vars: { release_name: 'datastore', chart_ref: 'apigee-datastore', release_state: absent }, tags: ['ds', 'apigeeds'] }
-  - { role: helm-ops, vars: { release_name: 'telemetry', chart_ref: 'apigee-telemetry', release_state: absent  }, tags: ['at', 'apigeetelem'] }
-  - { role: helm-ops, vars: { release_name: 'redis', chart_ref: 'apigee-redis', release_state: absent  }, tags: ['apigeeredis'] }
-  - { role: helm-ops, vars: { release_name: 'ingress-manager', chart_ref: 'apigee-ingress-manager', release_state: absent  }, tags: ['apigeeingress'] } 
-  - { role: helm-ops, vars: { release_name: 'operator', chart_ref: 'apigee-operator', release_namespace: 'apigee-system', create_namespace: true, release_state: absent }, tags: ['ao'] }
-  - { role: cert-manager, vars: { cert_manager_status: absent }, tags: ['cert-manager'] }
-  - { role: kubectl-ops, vars: { operation: patch, k8s_resource_type: ApigeeDatastore, k8s_resource: default, k8s_namespace: apigee, kubectl_args: "-p '{\"metadata\":{\"finalizers\":[]}}' --type=merge"}, tags: ['ds-decomm'] }
-  - { role: kubectl-ops, vars: { operation: delete, k8s_resource_type: namespace, k8s_resource: apigee, kubectl_args: '--ignore-not-found=true' }, tags: ['ns-decomm'] }
-  - { role: kubectl-ops, vars: { operation: delete, k8s_resource_type: namespace, k8s_resource: apigee-system, kubectl_args: '--ignore-not-found=true' }, tags: ['ns-decomm'] }
+    - { role: apigee-hybrid-overrides, tags: ['generate-overrides'] }
+    - { role: helm-ops, vars: { release_name: '{{ overrides.gcp.projectID }}', chart_ref: 'apigee-org', release_state: absent }, tags: ['apigeeorg', 'apigeeorgs'] }
+    - { role: helm-ops, vars: { release_name: 'datastore', chart_ref: 'apigee-datastore', release_state: absent }, tags: ['ds', 'apigeeds'] }
+    - { role: helm-ops, vars: { release_name: 'telemetry', chart_ref: 'apigee-telemetry', release_state: absent  }, tags: ['at', 'apigeetelem'] }
+    - { role: helm-ops, vars: { release_name: 'redis', chart_ref: 'apigee-redis', release_state: absent  }, tags: ['apigeeredis'] }
+    - { role: helm-ops, vars: { release_name: 'ingress-manager', chart_ref: 'apigee-ingress-manager', release_state: absent  }, tags: ['apigeeingress'] }
+    - { role: helm-ops, vars: { release_name: 'operator', chart_ref: 'apigee-operator', release_namespace: 'apigee-system', create_namespace: true, release_state: absent }, tags: ['ao'] }
+    - { role: cert-manager, vars: { cert_manager_status: absent }, tags: ['cert-manager'] }
+    - { role: kubectl-ops, vars: { operation: patch, k8s_resource_type: ApigeeDatastore, k8s_resource: default, k8s_namespace: apigee, kubectl_args: "-p '{\"metadata\":{\"finalizers\":[]}}' --type=merge"}, tags: ['ds-decomm'] }
+    - { role: kubectl-ops, vars: { operation: delete, k8s_resource_type: namespace, k8s_resource: apigee, kubectl_args: '--ignore-not-found=true' }, tags: ['ns-decomm'] }
+    - { role: kubectl-ops, vars: { operation: delete, k8s_resource_type: namespace, k8s_resource: apigee-system, kubectl_args: '--ignore-not-found=true' }, tags: ['ns-decomm'] }

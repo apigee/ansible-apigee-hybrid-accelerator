@@ -28,17 +28,17 @@
   when: "check_ns|length > 0"
 
 - block:
-  - name: kubectl {{operation}}
-    shell: >
-      kubectl {{ operation }} {{ k8s_resource_type }} {{ k8s_resource }} \
-        -n {{ k8s_namespace }} \
-        {{ kubectl_args }}
-    register: kubectl_op
-    when: "not check_ns_flag"
+    - name: kubectl {{operation}}
+      shell: >
+        kubectl {{ operation }} {{ k8s_resource_type }} {{ k8s_resource }} \
+          -n {{ k8s_namespace }} \
+          {{ kubectl_args }}
+      register: kubectl_op
+      when: "not check_ns_flag"
 
-  - debug:
-      msg: "{{ kubectl_op }}"
-    when: "not check_ns_flag"
+    - debug:
+        msg: "{{ kubectl_op }}"
+      when: "not check_ns_flag"
   rescue:
-  - debug:
-      msg: "kubectl {{ operation }} failed"
+    - debug:
+        msg: "kubectl {{ operation }} failed"

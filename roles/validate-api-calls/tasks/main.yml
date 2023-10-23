@@ -24,7 +24,7 @@
     state: directory
 
 - name: set proxy bundle
-  set_fact: 
+  set_fact:
     proxy_bundle_path: "{{ internet_apis if (internet_access) else internal_apis }}"
 
 - name: Compress directory
@@ -40,7 +40,7 @@
 
 
 - name: set apigee_env_group
-  set_fact: 
+  set_fact:
     apigee_env_group: "{{ overrides.virtualhosts[0].name }}"
   failed_when: overrides.virtualhosts|length == 0
 
@@ -127,7 +127,7 @@
     apigee_api_host: "{{ ingress_data.resources[0]['status']['loadBalancer']['ingress'][0]['ip'] }}"
   failed_when: "'ingress' not in ingress_data.resources[0]['status']['loadBalancer']"
 
-- debug: 
+- debug:
     msg: "{{ apigee_api_host }}"
 
 - name: execute install script
@@ -165,5 +165,5 @@
   retries: 20
   delay: 10
 
-- debug: 
+- debug:
     msg: "{{ validate_api_response_int }} "

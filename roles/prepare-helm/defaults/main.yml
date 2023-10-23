@@ -17,11 +17,11 @@ setup_path: "~"
 helm_chart_repo: oci://us-docker.pkg.dev/apigee-release/apigee-hybrid-helm-charts
 helm_chart_version: 1.10.3
 helm_charts:
-- apigee-operator
-- apigee-datastore
-- apigee-env
-- apigee-ingress-manager
-- apigee-org
-- apigee-redis
-- apigee-telemetry
-- apigee-virtualhost
+  - apigee-operator
+  - apigee-datastore
+  - apigee-env
+  - apigee-ingress-manager
+  - apigee-org
+  - apigee-redis
+  - apigee-telemetry
+  - apigee-virtualhost

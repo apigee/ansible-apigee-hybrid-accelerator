@@ -20,119 +20,113 @@
 
 - name: Create Service Account Secrets
   block:
-  - name: Create service-accounts directory
-    file:
-      path: "{{ setup_path }}/service-accounts"
-      state: directory
+    - name: Create service-accounts directory
+      file:
+        path: "{{ setup_path }}/service-accounts"
+        state: directory
 
-  - name: Generate svc_accounts_list
-    set_fact:
-      svc_accounts_list: "{{ svc_account_prod if (deployment_environment == 'prod') else svc_account_non_prod }}"
+    - name: Generate svc_accounts_list
+      set_fact:
+        svc_accounts_list: "{{ svc_account_prod if (deployment_environment == 'prod') else svc_account_non_prod }}"
 
-  - name: Check secret Block
-    block:
-    - name: Get an existing Secret object
-      kubernetes.core.k8s_info:
-        api_version: v1
-        kind: Secret
-        name: "{{ item }}-svc-account-secret"
-        namespace: apigee
-      register: apigee_secrets
-      with_items: "{{ svc_accounts_list }}"
-
-    - set_fact:
-        apigee_empty_secrets: "{{ apigee_empty_secrets + [ item.item ] }}"
-      when:  "item.resources|length == 0"
-      with_items: "{{ apigee_secrets.results }}"
-
-    - debug:
-        msg: "{{ apigee_empty_secrets }}"
-
-    - name: Example using fail and when together
-      fail:
-        msg: Unable to find required service account secrets
-      when: apigee_empty_secrets|length > 0
-
-    rescue:
-    - debug:
-        msg: "{{ apigee_empty_secrets }}"
-
-    - name: Use a single pattern that contains a comma formatted as a list
-      find:
-        paths: "{{ setup_path }}/service-accounts"
-        file_type: file
-        patterns: "{{ overrides.gcp.projectID }}-{{ item }}.json"
-      with_items: "{{ apigee_empty_secrets }}"
-      register: apigee_svc_account_json
-
-    - set_fact:
-        missing_svc_account_files: "{{ missing_svc_account_files + [ item.item ] }}"
-      when:  "item.matched == 0"
-      with_items: "{{ apigee_svc_account_json.results }}"
-    
-    - debug:
-        msg: "{{ missing_svc_account_files }}"
-
-    - name: Create Service Account
-      shell: |
-        download_keys(){
-        local sa_name=$1
-        local sa_email=$2
-        local output_dir=$3
-        local project_id=$4
-        gcloud iam service-accounts keys create "${output_dir}/${project_id}-${sa_name}.json" \
-            --iam-account="${sa_email}" || \
-                log_error "Failed to download keys for service account ${sa_name}"
-        echo "JSON Key ${sa_name} was successfully download to directory ${output_dir}."
-        }
-        download_keys {{ item }} {{ item }}@{{ overrides.gcp.projectID }}.iam.gserviceaccount.com {{ setup_path }}/service-accounts {{ overrides.gcp.projectID }}
-      with_items: "{{ missing_svc_account_files }}"
-      when: "not clone_secret"
-    
-    - name: Search for ServiceAccounts
-      kubernetes.core.k8s_info:
-        kind: Secret
-        namespace: apigee
-        name: "{{ item }}-svc-account-secret"
-        kubeconfig: "{{ kubeconfig }}"
-      with_items: "{{ missing_svc_account_files }}"
-      register: sa_data
-      when: "clone_secret"
-
-    # - debug: 
-    #     msg: "{{ sa_data.results | json_query(j_query) | first | b64decode }}"
-    #   with_items: "{{ svc_accounts_list }}"
-    #   vars:
-    #     j_query: "[?item=='{{ item }}'].resources[0].data.\"client_secret.json\""
-
-    - name: Copy using inline content
-      ansible.builtin.copy:
-        content: "{{ sa_data.results | json_query(j_query) | first | b64decode }}"
-        dest: "{{ setup_path }}/service-accounts/{{ overrides.gcp.projectID }}-{{ item }}.json"
-      with_items: "{{ missing_svc_account_files }}"
-      vars:
-        j_query: "[?item=='{{ item }}'].resources[0].data.\"client_secret.json\""
-      when: "clone_secret"
-
-    - name: Read  Service Account 
-      slurp: 
-        src: "{{ setup_path }}/service-accounts/{{ overrides.gcp.projectID }}-{{ item }}.json"
-      register: svc_account_data_output
-      with_items: "{{ svc_accounts_list }}"
-
-    - name: Create Service Account secret
-      kubernetes.core.k8s:
-        state: present
-        definition:
-          apiVersion: v1
-          kind: Secret
-          metadata:
+    - name: Check secret Block
+      block:
+        - name: Get an existing Secret object
+          kubernetes.core.k8s_info:
+            api_version: v1
+            kind: Secret
             name: "{{ item }}-svc-account-secret"
-            namespace: "apigee"
-          type: Opaque
-          data:
-            client_secret.json: "{{ svc_account_data_output.results| json_query(j_query)| first }}"
-      with_items: "{{ svc_accounts_list }}"
-      vars:
-        j_query: "[?item=='{{ item }}'].content"
+            namespace: apigee
+          register: apigee_secrets
+          with_items: "{{ svc_accounts_list }}"
+
+        - set_fact:
+            apigee_empty_secrets: "{{ apigee_empty_secrets + [ item.item ] }}"
+          when: "item.resources|length == 0"
+          with_items: "{{ apigee_secrets.results }}"
+
+        - debug:
+            msg: "{{ apigee_empty_secrets }}"
+
+        - name: Example using fail and when together
+          fail:
+            msg: Unable to find required service account secrets
+          when: apigee_empty_secrets|length > 0
+
+      rescue:
+        - debug:
+            msg: "{{ apigee_empty_secrets }}"
+
+        - name: Use a single pattern that contains a comma formatted as a list
+          find:
+            paths: "{{ setup_path }}/service-accounts"
+            file_type: file
+            patterns: "{{ overrides.gcp.projectID }}-{{ item }}.json"
+          with_items: "{{ apigee_empty_secrets }}"
+          register: apigee_svc_account_json
+
+        - set_fact:
+            missing_svc_account_files: "{{ missing_svc_account_files + [ item.item ] }}"
+          when: "item.matched == 0"
+          with_items: "{{ apigee_svc_account_json.results }}"
+
+        - debug:
+            msg: "{{ missing_svc_account_files }}"
+
+        - name: Create Service Account
+          shell: |
+            download_keys(){
+            local sa_name=$1
+            local sa_email=$2
+            local output_dir=$3
+            local project_id=$4
+            gcloud iam service-accounts keys create "${output_dir}/${project_id}-${sa_name}.json" \
+                --iam-account="${sa_email}" || \
+                    log_error "Failed to download keys for service account ${sa_name}"
+            echo "JSON Key ${sa_name} was successfully download to directory ${output_dir}."
+            }
+            download_keys {{ item }} {{ item }}@{{ overrides.gcp.projectID }}.iam.gserviceaccount.com {{ setup_path }}/service-accounts {{ overrides.gcp.projectID }}
+          with_items: "{{ missing_svc_account_files }}"
+          when: "not clone_secret"
+
+        - name: Search for ServiceAccounts
+          kubernetes.core.k8s_info:
+            kind: Secret
+            namespace: apigee
+            name: "{{ item }}-svc-account-secret"
+            kubeconfig: "{{ kubeconfig }}"
+          with_items: "{{ missing_svc_account_files }}"
+          register: sa_data
+          when: "clone_secret"
+
+        - name: Copy using inline content
+          ansible.builtin.copy:
+            content: "{{ sa_data.results | json_query(j_query) | first | b64decode }}"
+            dest: "{{ setup_path }}/service-accounts/{{ overrides.gcp.projectID }}-{{ item }}.json"
+          with_items: "{{ missing_svc_account_files }}"
+          vars:
+            j_query: "[?item=='{{ item }}'].resources[0].data.\"client_secret.json\""
+          when: "clone_secret"
+
+        - name: Read  Service Account
+          slurp:
+            src: "{{ setup_path }}/service-accounts/{{ overrides.gcp.projectID }}-{{ item }}.json"
+          register: svc_account_data_output
+          with_items: "{{ svc_accounts_list }}"
+
+        - name: Create Service Account secret
+          kubernetes.core.k8s:
+            state: present
+            definition:
+              apiVersion: v1
+              kind: Secret
+              metadata:
+                name: "{{ item }}-svc-account-secret"
+                namespace: "apigee"
+              type: Opaque
+              data:
+                client_secret.json: "{{ svc_account_data_output.results| json_query(j_query)| first }}"
+          with_items: "{{ svc_accounts_list }}"
+          vars:
+            j_query: "[?item=='{{ item }}'].content"
   when: "create_service_account"

@@ -20,28 +20,28 @@
 
 - name: execute validate kubernetes platform script
   block:
-  - script: |
-      validate_k8s_objects.py \
-      --input_data '{{ overrides_string }}' \
-      --generate_certificates '{{ generate_certificates }}' \
-      --create_service_account '{{ create_service_account }}'
-    register: validate_k8s
+    - script: |
+        validate_k8s_objects.py \
+        --input_data '{{ overrides_string }}' \
+        --generate_certificates '{{ generate_certificates }}' \
+        --create_service_account '{{ create_service_account }}'
+      register: validate_k8s
 
-  - name: Check validate kubernetes operation output
-    debug:
-      msg: "{{ validate_k8s }}"
+    - name: Check validate kubernetes operation output
+      debug:
+        msg: "{{ validate_k8s }}"
 
   rescue:
-  - name: Check validate kubernetes operation output
-    debug:
-      msg: "{{ validate_k8s }}"
+    - name: Check validate kubernetes operation output
+      debug:
+        msg: "{{ validate_k8s }}"
 
-  - name: Set Fail flag for control plane validation
-    set_fact:
-      k8s_validation_status: false
+    - name: Set Fail flag for control plane validation
+      set_fact:
+        k8s_validation_status: false
 
-  - name: Fail validation
-    fail:
-      msg: |
-        Kubernetes Validation Failed.
-        Please rectify the inputs OR ensure all kubernetes objects Exists
+    - name: Fail validation
+      fail:
+        msg: |
+          Kubernetes Validation Failed.
+          Please rectify the inputs OR ensure all kubernetes objects Exists

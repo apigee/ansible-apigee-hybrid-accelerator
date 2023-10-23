@@ -20,28 +20,27 @@
 
 - name: execute validate apigee-control-plane script
   block:
+    - name: Get Gcloud oAuth Token
+      shell: gcloud auth print-access-token
+      register: access_token
 
-  - name: Get Gcloud oAuth Token
-    shell: gcloud auth print-access-token
-    register: access_token
+    - script: |
+        validate_apigee_objects.py \
+        --input_data '{{ overrides_string }}' \
+        --access_token {{ access_token.stdout }}
+      register: validate_control_plane
 
-  - script: |
-      validate_apigee_objects.py \
-      --input_data '{{ overrides_string }}' \
-      --access_token {{ access_token.stdout }}
-    register: validate_control_plane
-
-  - name: Check validate_control_plane operation output
-    debug:
-      msg: "{{ validate_control_plane }}"
+    - name: Check validate_control_plane operation output
+      debug:
+        msg: "{{ validate_control_plane }}"
 
   rescue:
-  - name: Check validate_control_plane operation output
-    debug:
-      msg: "{{ validate_control_plane }}"
+    - name: Check validate_control_plane operation output
+      debug:
+        msg: "{{ validate_control_plane }}"
 
-  - name: Fail validation
-    fail:
-      msg: |
-        apigee-control-plane Validation Failed .
-        Please rectify the inputs OR ensure all Apigee Control plane objects Exists
+    - name: Fail validation
+      fail:
+        msg: |
+          apigee-control-plane Validation Failed .
+          Please rectify the inputs OR ensure all Apigee Control plane objects Exists

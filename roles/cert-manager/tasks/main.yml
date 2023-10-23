@@ -20,15 +20,15 @@
 
 - name: Install cert manager
   block:
-  - name: Download cert-manager
-    uri:
-      url: https://github.com/jetstack/cert-manager/releases/download/{{ cert_manager_version }}/cert-manager.yaml
-      dest: "{{ setup_path }}/cert-manager.yaml"
+    - name: Download cert-manager
+      uri:
+        url: https://github.com/jetstack/cert-manager/releases/download/{{ cert_manager_version }}/cert-manager.yaml
+        dest: "{{ setup_path }}/cert-manager.yaml"
 
-  - name: Apply cert-manager manifest to the cluster.
-    kubernetes.core.k8s:
-      state: "{{cert_manager_status}}"
-      src: "{{ setup_path }}/cert-manager.yaml"
+    - name: Apply cert-manager manifest to the cluster.
+      kubernetes.core.k8s:
+        state: "{{cert_manager_status}}"
+        src: "{{ setup_path }}/cert-manager.yaml"
   when: "install_cert_manager"
 
 - name: Wait for cert-manager to be up.

@@ -53,14 +53,14 @@ synchronizer_prod_svc_account: apigee-hybrid-user
 helm_chart_repo: oci://us-docker.pkg.dev/apigee-release/apigee-hybrid-helm-charts
 helm_chart_version: 1.10.3
 helm_charts:
-- apigee-operator
-- apigee-datastore
-- apigee-env
-- apigee-ingress-manager
-- apigee-org
-- apigee-redis
-- apigee-telemetry
-- apigee-virtualhost
+  - apigee-operator
+  - apigee-datastore
+  - apigee-env
+  - apigee-ingress-manager
+  - apigee-org
+  - apigee-redis
+  - apigee-telemetry
+  - apigee-virtualhost
 
 ################################################helm details ################################################
 
@@ -115,7 +115,7 @@ overrides:
   #
   # k8s secret name to use for pulling the docker images.
   #
-  imagePullSecrets: 
+  imagePullSecrets:
 
   # httpProxy:
     # host: 172.23.3.99
@@ -147,13 +147,13 @@ overrides:
   orgScopedUDCA: true
 
   virtualhosts:
-  - name: test
-    # selector:
-      # app1: apigee-ingressgateway
-    # tlsMode: MUTUAL
-    sslSecret: apigee-tls-secret
-    hostnames:
-    - test.api.example.com
+    - name: test
+      # selector:
+        # app1: apigee-ingressgateway
+      # tlsMode: MUTUAL
+      sslSecret: apigee-tls-secret
+      hostnames:
+        - test.api.example.com
 
   # - name: test2
   #   selector:
@@ -163,14 +163,14 @@ overrides:
   #   - test2.api.example.com
 
   envs:
-  - name: test1
-    synchronizer:
-      replicaCountMin: 1
-      replicaCountMax: 4
-    runtime:
-      replicaCountMax: 3
+    - name: test1
+      synchronizer:
+        replicaCountMin: 1
+        replicaCountMax: 4
+      runtime:
+        replicaCountMax: 3
 
-  - name: test2
+    - name: test2
 
   mart:
     serviceAccountRef: apigee-hybrid-secret
@@ -200,7 +200,7 @@ overrides:
   synchronizer:
     replicaCountMin: 1
     replicaCountMax: 4
-    serviceAccountRef: apigee-hybrid-secret 
+    serviceAccountRef: apigee-hybrid-secret
     image:
       url: "gcr.io/apigee-release/hybrid/apigee-synchronizer"
       tag: "1.10.3"
@@ -355,7 +355,7 @@ overrides:
     proxyURL:
   # Apigee Connect Agent
   connectAgent:
-    serviceAccountRef: apigee-hybrid-secret 
+    serviceAccountRef: apigee-hybrid-secret
     image:
       url: "gcr.io/apigee-release/hybrid/apigee-connect-agent"
       tag: "1.10.3"
@@ -368,7 +368,7 @@ overrides:
         memory: 128Mi
   # Apigee Watcher
   watcher:
-    serviceAccountRef: apigee-hybrid-secret 
+    serviceAccountRef: apigee-hybrid-secret
     image:
       url: "gcr.io/apigee-release/hybrid/apigee-watcher"
       tag: "1.10.3"

@@ -40,7 +40,7 @@
   template:
     src: templates/datareplication.j2
     dest: "{{ setup_path }}/{{ cassandra_data_replication_yaml }}"
-  
+
 - name: Apply cassandra_data_replication_yaml
   kubernetes.core.k8s:
     state: present

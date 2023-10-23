@@ -19,16 +19,15 @@ svc_account_script_path: helm/apigee-operator/etc/tools/create-service-account
 apigee_empty_secrets: []
 missing_svc_account_files: []
 svc_account_prod:
-- apigee-logger
-- apigee-metrics
-- apigee-cassandra
-- apigee-udca
-- apigee-synchronizer
-- apigee-mart
-- apigee-watcher
-- apigee-runtime
-
+  - apigee-logger
+  - apigee-metrics
+  - apigee-cassandra
+  - apigee-udca
+  - apigee-synchronizer
+  - apigee-mart
+  - apigee-watcher
+  - apigee-runtime
 svc_account_non_prod:
-- apigee-non-prod
+  - apigee-non-prod
 create_service_account: false
 clone_secret: false
