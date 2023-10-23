@@ -19,10 +19,10 @@ SCRIPTPATH="$( cd "$(dirname "$0")" || exit >/dev/null 2>&1 ; pwd -P )"
 COPYRIGHT_FILE="$SCRIPTPATH/copyright"
 
 
-for i in $(find $SCRIPTPATH -name "*.$EXTENSION")
+for i in $(find "$SCRIPTPATH" -name "*.$EXTENSION")
 do
-  if ! grep -q Copyright $i
+  if ! grep -q Copyright "$i"
   then
-    cat $COPYRIGHT_FILE $i >$i.new && mv $i.new $i
+    cat "$COPYRIGHT_FILE" "$i" >"$i".new && mv "$i".new "$i"
   fi
 done
