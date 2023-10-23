@@ -25,13 +25,12 @@
       {% endif %}
       {%- endfor %}
       {{ res }}
-  
+
 - set_fact:
     input_extra_data_sanitized: "{{ input_extra_data | from_yaml }}"
-        
+
 - debug: msg="{{ input_extra_data_sanitized }}"
 
-  
 - name: set facts for data and criteria
   set_fact:
     criteria: "{{ lookup('ansible.builtin.file', 'input.schema.json')}}"

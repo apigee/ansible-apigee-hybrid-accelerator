@@ -11,5 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
----
-# handlers file for certificates
+
+extends: default
+rules:
+  document-start: disable
+  line-length:
+    level: warning
+  new-line-at-end-of-file:
+    level: warning
+  braces:
+    level: warning
+ignore: |
+  node_modules

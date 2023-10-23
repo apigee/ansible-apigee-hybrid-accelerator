@@ -18,7 +18,7 @@
     path: "{{ setup_path }}"
     state: directory
 
-- name: Deploy {{ chart_ref }} 
+- name: Deploy {{ chart_ref }}
   kubernetes.core.helm:
     name: "{{ release_name }}"
     chart_ref: "{{ setup_path }}/helm/{{ chart_ref }}"

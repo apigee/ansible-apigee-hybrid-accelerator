@@ -20,6 +20,7 @@ import requests
 from time import sleep
 import argparse
 
+
 class Apigee:
     def __init__(
         self,
@@ -48,7 +49,7 @@ class Apigee:
             return True
         return False
 
-    def get_access_token(self,access_token):
+    def get_access_token(self, access_token):
         token = access_token
         if token is not None:
             if self.apigee_type == "x":
@@ -86,7 +87,7 @@ class Apigee:
             revision = response.json().get('revision', ['1'])
             return True, revision
         else:
-            return False,None
+            return False, None
 
     def create_api(self, api_name, proxy_bundle_path):
         url = f"{self.baseurl}/apis?action=import&name={api_name}&validate=true"  # noqa
@@ -172,7 +173,7 @@ class Apigee:
             if self.get_api_revisions_deployment(
                         env, api_name, api_rev
                     ):
-                print(f"INFO : Proxy {api_name} already active in to {env} in Apigee Org {self.org} !")
+                print(f"INFO : Proxy {api_name} already active in to {env} in Apigee Org {self.org} !")  # noqa
                 return True
             else:
                 if self.deploy_api(env, api_name, api_rev):
@@ -235,14 +236,15 @@ class Apigee:
             return True
         return False
 
+
 def main():
-    parser = argparse.ArgumentParser(description='Deploy Apigee API proxy bundle')
+    parser = argparse.ArgumentParser(description='Deploy Apigee API proxy bundle')  # noqa
     parser.add_argument('--project_id', help='GCP Project ID')
     parser.add_argument('--env', help='Apigee Environment Name')
     parser.add_argument('--api_name', help='Apigee API Name')
-    parser.add_argument('--api_bundle_path', help='Apigee API Proxy bundle path')
+    parser.add_argument('--api_bundle_path', help='Apigee API Proxy bundle path')  # noqa
     parser.add_argument('--access_token', help='GCP OAuth Access Token')
-    parser.add_argument('--api_redeploy', help='Redploy API',action="store_true")
+    parser.add_argument('--api_redeploy', help='Redploy API',action="store_true")  # noqa
     args = parser.parse_args()
     TargetApigee = Apigee(
         "x",
@@ -259,6 +261,7 @@ def main():
     ):
         print(f"Proxy: {args.api_name} deployment failed.")
         sys.exit(1)
+
 
 if __name__ == '__main__':
     main()

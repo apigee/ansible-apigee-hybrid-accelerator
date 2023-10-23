@@ -11,7 +11,7 @@ echo "---"
 for PROF in "${SUPPORTED_PROFILES[@]}"; do
     SA_NAME="$PROJECT_ID-$PROF.json"
     kubectl create secret \
-        generic $PROF-custom-secret \
+        generic "$PROF-custom-secret" \
         -n "$NAMESPACE" \
         --from-file=client_secret.json="$SVC_DIR/$SA_NAME" \
         --dry-run=client \

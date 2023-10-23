@@ -32,7 +32,7 @@
     sync_identity: "{{ (synchronizer_status.json.identities[0] if ('identities' in synchronizer_status.json) else 'serviceAccount:') | split(':') }}"
 
 - name: Get Synchronizer Service Account
-  set_fact: 
+  set_fact:
     synchronizer_service_account: "{{ synchronizer_prod_svc_account if (deployment_environment == 'prod') else synchronizer_non_prod_svc_account }}@{{ overrides.gcp.projectID }}.iam.gserviceaccount.com"
 
 - name: Enable Synchronizer

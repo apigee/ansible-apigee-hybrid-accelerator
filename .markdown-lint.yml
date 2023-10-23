@@ -11,5 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
----
-# handlers file for enable-apigee-synchronizer
+
+MD013:
+  code_blocks: false
+MD024:
+  siblings_only: true
+MD041: false

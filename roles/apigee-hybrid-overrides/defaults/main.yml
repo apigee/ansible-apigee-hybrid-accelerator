@@ -49,7 +49,7 @@ overrides:
   #
   # k8s secret name to use for pulling the docker images.
   #
-  imagePullSecrets: 
+  imagePullSecrets:
 
   nodeSelector:
     requiredForScheduling: true
@@ -75,10 +75,10 @@ overrides:
   orgScopedUDCA: true
 
   virtualhosts:
-  - name: dev-group
-    sslSecret: 
+    - name: dev-group
+      sslSecret:
   envs:
-  - name: dev
+    - name: dev
   mart:
     serviceAccountRef: ""
     replicaCountMin: 1
@@ -107,7 +107,7 @@ overrides:
   synchronizer:
     replicaCountMin: 1
     replicaCountMax: 4
-    serviceAccountRef: 
+    serviceAccountRef:
     image:
       url: "gcr.io/apigee-release/hybrid/apigee-synchronizer"
       tag: "1.10.3"
@@ -262,7 +262,7 @@ overrides:
     proxyURL:
   # Apigee Connect Agent
   connectAgent:
-    serviceAccountRef: 
+    serviceAccountRef:
     image:
       url: "gcr.io/apigee-release/hybrid/apigee-connect-agent"
       tag: "1.10.3"
@@ -275,7 +275,7 @@ overrides:
         memory: 128Mi
   # Apigee Watcher
   watcher:
-    serviceAccountRef: 
+    serviceAccountRef:
     image:
       url: "gcr.io/apigee-release/hybrid/apigee-watcher"
       tag: "1.10.3"

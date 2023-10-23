@@ -20,118 +20,118 @@
 
 - name: Create SSL Certificate and Secrets
   block:
-  - name: Certificates directory exists
-    file:
-      path: "{{ setup_path }}/{{ item.name }}"
-      state: directory
-    loop: "{{ overrides.virtualhosts }}"
+    - name: Certificates directory exists
+      file:
+        path: "{{ setup_path }}/{{ item.name }}"
+        state: directory
+      loop: "{{ overrides.virtualhosts }}"
 
-  - name: Generate SAN list
-    set_fact: 
-      san_hosts: "{{ san_hosts | default({}) | combine ({ item.name : 'DNS:'+item.hostnames| join(',DNS:') }) }}"
-    loop: "{{ overrides.virtualhosts }}"
+    - name: Generate SAN list
+      set_fact:
+        san_hosts: "{{ san_hosts | default({}) | combine ({ item.name : 'DNS:'+item.hostnames| join(',DNS:') }) }}"
+      loop: "{{ overrides.virtualhosts }}"
 
-  - name: Generate SAN list
-    debug: 
-      msg: "{{ item.value| split(',') }}"
-    with_dict: "{{ san_hosts }}"
+    - name: Generate SAN list
+      debug:
+        msg: "{{ item.value| split(',') }}"
+      with_dict: "{{ san_hosts }}"
 
-  - name: Create private key (RSA, 4096 bits)
-    community.crypto.openssl_privatekey:
-      path: "{{ setup_path }}/{{ item.key }}/certificate.key"
-    with_dict: "{{ san_hosts }}"
+    - name: Create private key (RSA, 4096 bits)
+      community.crypto.openssl_privatekey:
+        path: "{{ setup_path }}/{{ item.key }}/certificate.key"
+      with_dict: "{{ san_hosts }}"
 
-  - name: Create certificate signing request (CSR) for self-signed certificate
-    community.crypto.openssl_csr_pipe:
-      privatekey_path: "{{ setup_path }}/{{ item.key }}/certificate.key"
-      common_name: "{{ cert_cn }}"
-      organization_name: Apigee, Inc.
-      subject_alt_name: "{{ item.value| split(',') }}"
-    register: csr
-    with_dict: "{{ san_hosts }}"
+    - name: Create certificate signing request (CSR) for self-signed certificate
+      community.crypto.openssl_csr_pipe:
+        privatekey_path: "{{ setup_path }}/{{ item.key }}/certificate.key"
+        common_name: "{{ cert_cn }}"
+        organization_name: Apigee, Inc.
+        subject_alt_name: "{{ item.value| split(',') }}"
+      register: csr
+      with_dict: "{{ san_hosts }}"
 
-  - name: Create self-signed certificate from CSR
-    community.crypto.x509_certificate:
-      path: "{{ setup_path }}/{{ item.item.key }}/certificate.pem"
-      csr_content: "{{ item.csr }}"
-      privatekey_path: "{{ setup_path }}/{{ item.item.key }}/certificate.key"
-      provider: selfsigned
-    loop: "{{ csr.results }}"
+    - name: Create self-signed certificate from CSR
+      community.crypto.x509_certificate:
+        path: "{{ setup_path }}/{{ item.item.key }}/certificate.pem"
+        csr_content: "{{ item.csr }}"
+        privatekey_path: "{{ setup_path }}/{{ item.item.key }}/certificate.key"
+        provider: selfsigned
+      loop: "{{ csr.results }}"
 
-  - name: Read certificate 
-    slurp: 
-      src: "{{ setup_path }}/{{ item.name }}/certificate.pem"
-    register: certificate_output
-    loop: "{{ overrides.virtualhosts }}"
+    - name: Read certificate
+      slurp:
+        src: "{{ setup_path }}/{{ item.name }}/certificate.pem"
+      register: certificate_output
+      loop: "{{ overrides.virtualhosts }}"
 
-  - name: Read private key
-    slurp: 
-      src: "{{ setup_path }}/{{ item.name }}/certificate.key"
-    register: privatekey_output
-    loop: "{{ overrides.virtualhosts }}"
+    - name: Read private key
+      slurp:
+        src: "{{ setup_path }}/{{ item.name }}/certificate.key"
+      register: privatekey_output
+      loop: "{{ overrides.virtualhosts }}"
 
-  - name: Create apigee namespace
-    kubernetes.core.k8s:
-      state: present
-      definition:
-        apiVersion: v1
-        kind: Namespace
-        metadata:
-          name: "{{ tls_namespace }}"
+    - name: Create apigee namespace
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Namespace
+          metadata:
+            name: "{{ tls_namespace }}"
 
-  - name: Create secret
-    kubernetes.core.k8s:
-      state: present
-      definition:
-        apiVersion: v1
-        kind: Secret
-        metadata:
-          name: "{{ item.sslSecret if item.sslSecret else item.name+\"-ssl-secret\" }}"
-          namespace: "{{ tls_namespace }}"
-        type: kubernetes.io/tls
-        data:
-          tls.crt: "{{ certificate_output.results| json_query(j_query)| first }}"
-          tls.key: "{{ privatekey_output.results| json_query(j_query)| first }}"
-    loop: "{{ overrides.virtualhosts }}"
-    vars:
-      j_query: "[?item.name=='{{ item.name }}'].content"
+    - name: Create secret
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: "{{ item.sslSecret if item.sslSecret else item.name+\"-ssl-secret\" }}"
+            namespace: "{{ tls_namespace }}"
+          type: kubernetes.io/tls
+          data:
+            tls.crt: "{{ certificate_output.results| json_query(j_query)| first }}"
+            tls.key: "{{ privatekey_output.results| json_query(j_query)| first }}"
+      loop: "{{ overrides.virtualhosts }}"
+      vars:
+        j_query: "[?item.name=='{{ item.name }}'].content"
   when: "generate_certificates"
 
 - name: Clone SSL Certificate and Secrets
   block:
-  - name: Create apigee namespace
-    kubernetes.core.k8s:
-      state: present
-      definition:
-        apiVersion: v1
-        kind: Namespace
-        metadata:
-          name: "{{ tls_namespace }}"
+    - name: Create apigee namespace
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Namespace
+          metadata:
+            name: "{{ tls_namespace }}"
 
-  - name: Search for ServiceAccounts
-    kubernetes.core.k8s_info:
-      kind: Secret
-      namespace: apigee
-      name: "{{ item.sslSecret if item.sslSecret else item.name+\"-ssl-secret\" }}"
-      kubeconfig: "{{ kubeconfig }}"
-    loop: "{{ overrides.virtualhosts }}"
-    register: ssl_data
-
-  - name: Create secret
-    kubernetes.core.k8s:
-      state: present
-      definition:
-        apiVersion: v1
+    - name: Search for ServiceAccounts
+      kubernetes.core.k8s_info:
         kind: Secret
-        metadata:
-          name: "{{ item.sslSecret if item.sslSecret else item.name+\"-ssl-secret\" }}"
-          namespace: "{{ tls_namespace }}"
-        type: kubernetes.io/tls
-        data:
-          tls.crt: "{{ ssl_data.results| json_query(j_query1)| first }}"
-          tls.key: "{{ ssl_data.results| json_query(j_query2)| first }}"
-    loop: "{{ overrides.virtualhosts }}"
-    vars:
-      j_query1: "[?item.name=='{{ item.name }}'].resources[0].data.\"tls.crt\""
-      j_query2: "[?item.name=='{{ item.name }}'].resources[0].data.\"tls.key\""
+        namespace: apigee
+        name: "{{ item.sslSecret if item.sslSecret else item.name+\"-ssl-secret\" }}"
+        kubeconfig: "{{ kubeconfig }}"
+      loop: "{{ overrides.virtualhosts }}"
+      register: ssl_data
+
+    - name: Create secret
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: "{{ item.sslSecret if item.sslSecret else item.name+\"-ssl-secret\" }}"
+            namespace: "{{ tls_namespace }}"
+          type: kubernetes.io/tls
+          data:
+            tls.crt: "{{ ssl_data.results| json_query(j_query1)| first }}"
+            tls.key: "{{ ssl_data.results| json_query(j_query2)| first }}"
+      loop: "{{ overrides.virtualhosts }}"
+      vars:
+        j_query1: "[?item.name=='{{ item.name }}'].resources[0].data.\"tls.crt\""
+        j_query2: "[?item.name=='{{ item.name }}'].resources[0].data.\"tls.key\""
   when: "(not generate_certificates) and clone_certificates"
