@@ -14,10 +14,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import argparse
+import json
 import os
 import sys
-import json
-import argparse
+
 from kubernetes import client, config
 
 KUBECONFIG_FILE = os.getenv('KUBECONFIG')
