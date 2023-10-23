@@ -1,38 +1,64 @@
-Role Name
+Manage Apigee Hybrid Northbould TLS Certificates
 =========
 
-A brief description of the role goes here.
+This role can generate Self Signed certificates and set them as Kubernetes Secrets. This can be skipped in case of using your own certificates.
 
 Requirements
 ------------
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+This role uses the below ansible modules
+* [file_module](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/file_module.html)
+* [set_fact_module](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/set_fact_module.html)
+* [openssl_privatekey_module](https://docs.ansible.com/ansible/latest/collections/community/crypto/openssl_privatekey_module.html)
+* [openssl_csr_pipe_module](https://docs.ansible.com/ansible/latest/collections/community/crypto/openssl_csr_pipe_module.html)
+* [x509_certificate_module](https://docs.ansible.com/ansible/latest/collections/community/crypto/x509_certificate_module.html)
+* [slurp_module](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/slurp_module.html)
+* [k8s_module](https://docs.ansible.com/ansible/latest/collections/kubernetes/core/k8s_module.html)
+* [k8s_info_module](https://docs.ansible.com/ansible/latest/collections/kubernetes/core/k8s_info_module.html)
 
 Role Variables
 --------------
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+This takes in the below variables
+```
+setup_path: "~"
+generate_certificates: true
+clone_certificates: false
+cert_cn: "apigee.com"
+tls_namespace: apigee
+```
 
 Dependencies
 ------------
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+N/A
 
 Example Playbook
 ----------------
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
+Below is an example of the usage of the role
 
-    - hosts: servers
+    - hosts: localhost
       roles:
-         - { role: username.rolename, x: 42 }
+        - { role: certificates, vars: { generate_certificates: true }, tags: ['certs'] }
 
 License
 -------
 
-BSD
+Apache 2.0
 
 Author Information
 ------------------
 
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+Ashwin Kumar Naik
+<!-- BEGIN Google How To Contribute -->
+# How to Contribute
+
+We'd love to accept your patches and contributions to this project. Please review our [guidelines](../../CONTRIBUTING.md).
+<!-- END Google How To Contribute -->
+<!-- BEGIN Google Required Disclaimer -->
+
+# Not Google Product Clause
+
+This is not an officially supported Google product.
+<!-- END Google Required Disclaimer -->
