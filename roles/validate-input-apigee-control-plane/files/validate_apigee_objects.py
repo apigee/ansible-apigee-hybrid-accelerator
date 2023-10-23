@@ -20,6 +20,7 @@ import argparse
 import json
 import collections
 
+
 class Apigee:
     def __init__(
         self,
@@ -40,13 +41,13 @@ class Apigee:
             else "Basic {}".format(access_token)  # noqa
         }
 
-    def get_token_user(self,token):
+    def get_token_user(self, token):
         url = f"https://www.googleapis.com/oauth2/v1/tokeninfo?access_token={token}"  # noqa
         response = requests.get(url)
         if response.status_code == 200:
             return response.json()['email']
         return ''
-    
+
     def is_token_valid(self, token):
         url = f"https://www.googleapis.com/oauth2/v1/tokeninfo?access_token={token}"  # noqa
         response = requests.get(url)
@@ -55,8 +56,7 @@ class Apigee:
             return True
         return False
 
-
-    def get_access_token(self,access_token):
+    def get_access_token(self, access_token):
         token = access_token
         if token is not None:
             if self.apigee_type == "x":
@@ -64,7 +64,7 @@ class Apigee:
                     return token
                 else:
                     print(
-                        'please run "export APIGEE_ACCESS_TOKEN=$(gcloud auth print-access-token)" first !! '  # noqa type: ignore
+                        'please run "export APIGEE_ACCESS_TOKEN=$(gcloud auth print-access-token)" first !! '  # noqa pylint: disable=line-too-long
                     )
                     sys.exit(1)
             else:
@@ -72,7 +72,7 @@ class Apigee:
         else:
             if self.apigee_type == "x":
                 print(
-                    'please run "export APIGEE_ACCESS_TOKEN=$(gcloud auth print-access-token)" first !! '  # noqa
+                    'please run "export APIGEE_ACCESS_TOKEN=$(gcloud auth print-access-token)" first !! '  # noqa pylint: disable=line-too-long
                 )
             else:
                 print("please export APIGEE_OPDK_ACCESS_TOKEN")
@@ -87,16 +87,7 @@ class Apigee:
         }
 
     def get_org(self):
-        url=f"{self.baseurl}"
-        headers = self.auth_header.copy()
-        response = requests.request("GET", url, headers=headers)
-        if response.status_code == 200:
-            return True
-        else:
-            return False
-        
-    def get_environment(self,env):
-        url=f"{self.baseurl}/environments/{env}"
+        url = f"{self.baseurl}"
         headers = self.auth_header.copy()
         response = requests.request("GET", url, headers=headers)
         if response.status_code == 200:
@@ -104,20 +95,31 @@ class Apigee:
         else:
             return False
 
-    def get_env_group(self,env_group):
-        url=f"{self.baseurl}/envgroups/{env_group}"
+    def get_environment(self, env):
+        url = f"{self.baseurl}/environments/{env}"
         headers = self.auth_header.copy()
         response = requests.request("GET", url, headers=headers)
         if response.status_code == 200:
-            return True,response.json()
+            return True
         else:
-            return False,None
+            return False
 
-def compare_lists(l1,l2):
-    if(collections.Counter(l1)==collections.Counter(l2)):
-      return True
+    def get_env_group(self, env_group):
+        url = f"{self.baseurl}/envgroups/{env_group}"
+        headers = self.auth_header.copy()
+        response = requests.request("GET", url, headers=headers)
+        if response.status_code == 200:
+            return True, response.json()
+        else:
+            return False, None
+
+
+def compare_lists(l1, l2):
+    if collections.Counter(l1) == collections.Counter(l2):
+        return True
     else:
         return False
+
 
 def main():
     parser = argparse.ArgumentParser(description='Validates Apigee Objects')
@@ -138,28 +140,29 @@ def main():
     validations = []
     authenticated_user = TargetApigee.get_token_user(args.access_token)
     if not TargetApigee.get_org():
-        validations.append(f"Apigee Organization : {apigee_org} doesnt exist OR user {authenticated_user} doesnt have permissions ")
+        validations.append(f"Apigee Organization : {apigee_org} doesnt exist OR user {authenticated_user} doesnt have permissions ")  # noqa pylint: disable=line-too-long
 
     for apigee_env in apigee_envs:
         if not TargetApigee.get_environment(apigee_env['name']):
-            validations.append(f"Apigee Environment : {apigee_env['name']} doesnt exist OR user {authenticated_user} doesnt have permissions ")
+            validations.append(f"Apigee Environment : {apigee_env['name']} doesnt exist OR user {authenticated_user} doesnt have permissions ")  # noqa pylint: disable=line-too-long
 
     for apigee_vhost in apigee_vhosts:
-        apigee_vhost_status, apigee_vhost_info = TargetApigee.get_env_group(apigee_vhost['name'])
+        apigee_vhost_status, apigee_vhost_info = TargetApigee.get_env_group(apigee_vhost['name'])  # noqa pylint: disable=line-too-long
         if not apigee_vhost_status:
-            validations.append(f"Apigee Environment Group : {apigee_vhost['name']} doesnt exist OR user {authenticated_user} doesnt have permissions ")
+            validations.append(f"Apigee Environment Group : {apigee_vhost['name']} doesnt exist OR user {authenticated_user} doesnt have permissions ")  # noqa pylint: disable=line-too-long
 
         if apigee_vhost_status:
-            apigee_vhost_hostname = apigee_vhost.get('hostnames',[])
-            apigee_vhost_info_hostname = apigee_vhost_info.get('hostnames',[])
-            if not compare_lists(apigee_vhost_hostname, apigee_vhost_info_hostname):
-                validations.append(f"Apigee Environmrnt Group {apigee_vhost['name']} hostnames {apigee_vhost_hostname} dont match the hostnames in Apigee Management API: {apigee_vhost_info_hostname}")
+            apigee_vhost_hostname = apigee_vhost.get('hostnames', [])
+            apigee_vhost_info_hostname = apigee_vhost_info.get('hostnames', []) # noqa pylint: disable=line-too-long
+            if not compare_lists(apigee_vhost_hostname, apigee_vhost_info_hostname):  # noqa pylint: disable=line-too-long
+                validations.append(f"Apigee Environmrnt Group {apigee_vhost['name']} hostnames {apigee_vhost_hostname} dont match the hostnames in Apigee Management API: {apigee_vhost_info_hostname}")  # noqa pylint: disable=line-too-long
 
     if len(validations) > 0:
         print('Validation Errors found !')
         print("\n".join(validations))
         sys.exit(1)
     print('Apigee Control plane validations successfull')
+
 
 if __name__ == '__main__':
     main()
