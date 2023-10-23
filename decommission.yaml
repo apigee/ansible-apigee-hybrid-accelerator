@@ -22,12 +22,12 @@
   vars:
     cassandra_dc: dc-2
   tags:
-  - dc2
+    - dc2
   roles:
-  - { role: apigee-hybrid-overrides, tags: ['generate-overrides'] }
+    - { role: apigee-hybrid-overrides, tags: ['generate-overrides']}
   tasks:
     - name: un-deploy environment
-      include_role: { name: helm-ops, apply: { tags: apigeeenv } }
+      include_role: { name: helm-ops, apply: { tags: apigeeenv }}
       vars:
         release_name: "{{ item.name }}"
         release_state: absent
