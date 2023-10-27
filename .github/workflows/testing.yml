@@ -80,7 +80,7 @@ jobs:
         run: |
           bash deploy_control_plane.sh ${{ github.workspace }}/test/terraform/control-plane
         shell: bash
-        working-directory: ./test/scipts
+        working-directory: ./test/scripts
         env:
           TF_BACKEND_BUCKET: ${{ secrets.TF_BACKEND_BUCKET }}
           GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
