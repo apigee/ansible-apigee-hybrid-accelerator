@@ -27,15 +27,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v2
-      - name: Setup Node
-        uses: actions/setup-node@v2
-        with:
-          node-version: "14"
-      - name: Install Linter dependencies
-        run: npm install
+        uses: actions/checkout@v3
+
       - name: Run Mega Linter
-        uses: nvuillam/mega-linter@v4
+        uses: oxsecurity/megalinter@v7
         env:
           DEFAULT_BRANCH: main
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -50,7 +45,14 @@ jobs:
           MARKDOWN_MARKDOWN_LINK_CHECK_DISABLE_ERRORS: true
           PYTHON_MYPY_DISABLE_ERRORS: true
           PYTHON_BANDIT_DISABLE_ERRORS: true
-          DISABLE_LINTERS: PYTHON_PYLINT
+          DISABLE_LINTERS: PYTHON_PYRIGHT,PYTHON_PYLINT,TERRAFORM_TFLINT,REPOSITORY_KICS
+          TERRAFORM_TERRASCAN_FILE_EXTENSIONS: .tf
+          TERRAFORM_TERRASCAN_ARGUMENTS: -d /github/workspace/test/terraform/control-plane
+          SPELL_LYCHEE_DISABLE_ERRORS: true
+          REPOSITORY_TRIVY_DISABLE_ERRORS: true
+          REPOSITORY_CHECKOV_DISABLE_ERRORS: true
+          REPOSITORY_DEVSKIM_DISABLE_ERRORS: true
+          TERRAFORM_TERRASCAN_DISABLE_ERRORS: true
 
   commit-messages:
     name: Conventional Commits Lint
