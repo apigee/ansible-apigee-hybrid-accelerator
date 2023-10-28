@@ -78,7 +78,49 @@ jobs:
       - name: Run Terraform
         id: init
         run: |
-          bash deploy_control_plane.sh ${{ github.workspace }}/test/terraform/control-plane
+          bash deploy_terraform.sh ${{ github.workspace }}/test/terraform/control-plane
+        shell: bash
+        working-directory: ./test/scripts
+        env:
+          TF_BACKEND_BUCKET: ${{ secrets.TF_BACKEND_BUCKET }}
+          GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+          GCP_REGION: ${{ secrets.GCP_REGION }}
+
+  deploy-runtime-plane-gke:
+    name: Deploy Apigee Hybrid Runtime GKE Platform
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+      - id: checkout
+        name: Checkout
+        uses: actions/checkout@v2
+
+      - id: commit
+        uses: prompt/actions-commit-hash@v3
+
+      - id: auth
+        name: Authenticate with Google Cloud
+        uses: google-github-actions/auth@v0
+        with:
+          token_format: access_token
+          workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_POOL_PROVIDER_NAME }}
+          service_account: ${{ secrets.SVC_ACCOUNT_EMAIL }}
+          access_token_lifetime: 300s
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.5.2
+          terraform_wrapper: false
+
+      - name: Run Terraform
+        id: init
+        run: |
+          bash deploy_terraform.sh ${{ github.workspace }}/test/terraform/runtime-plane-gke
         shell: bash
         working-directory: ./test/scripts
         env:
