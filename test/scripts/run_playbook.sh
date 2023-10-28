@@ -33,7 +33,13 @@ replace_string "$ANSIBLE_DIR/vars/test.yaml" "_GCP_PROJECT_ID_" "${GCP_PROJECT_I
 replace_string "$ANSIBLE_DIR/vars/test.yaml" "_GCP_REGION_" "${GCP_REGION}"
 
 docker run -v "$ANSIBLE_DIR:/app" \
-    -v "$GOOGLE_APPLICATION_CREDENTIALS:/app/kubeconfig" \
-    -e GOOGLE_APPLICATION_CREDENTIALS=/app/kubeconfig \
+    -v "$GOOGLE_APPLICATION_CREDENTIALS:/svc_account/account.json" \
+    -e GOOGLE_APPLICATION_CREDENTIALS=/svc_account/account.json \
     "$GCP_REGION-docker.pkg.dev/$GCP_PROJECT_ID/$GCP_GAR_REPO/ansible-helm-apigee-hybrid-deployer:$GIT_COMMIT_SHORT_ID" \
-    /bin/bash -c "cd /app && ansible-playbook playbook.yaml --tags 'dc1' -e @vars/test.yaml"
+    /bin/bash -c "cd /app && \
+      gcloud auth login --cred-file=/svc_account/account.json && \
+      gcloud container clusters get-credentials apigee-hybrid-cicd-test --region $GCP_REGION --project $GCP_PROJECT_ID && \
+      ansible-playbook playbook.yaml --tags 'dc1' -e @vars/test.yaml || PLAYBOOK_STATUS=fail && \
+      gsutil cp -r /tmp/setup gs://$TF_BACKEND_BUCKET/ansible_run_log/$(date +%s) && \
+      if [ \"$PLAYBOOK_STATUS\" == \"fail\" ]; then exit 1; fi
+      "

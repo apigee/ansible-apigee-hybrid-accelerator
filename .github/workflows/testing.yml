@@ -164,7 +164,7 @@ jobs:
           bash run_playbook.sh \
             ${{ github.workspace }} latest
         shell: bash
-        working-directory: ./test/scripts 
+        working-directory: ./test/scripts
         env:
           TF_BACKEND_BUCKET: ${{ secrets.TF_BACKEND_BUCKET }}
           GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}

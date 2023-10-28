@@ -14,10 +14,10 @@
 
 ---
 # Path to download/generate files
-setup_path: "/tmp"
+setup_path: "/tmp/setup"
 
 # Set `cert_manager_version: : v1.7.2` refer: https://cloud.google.com/apigee/docs/hybrid/v1.10/install-cert-manager
-install_cert_manager: false
+install_cert_manager: true
 cert_manager_version: v1.7.2
 
 ################################################ TLS certificate details ################################################
@@ -68,7 +68,7 @@ helm_charts:
 
 kubeconfigs:
   # set `primary: <Path to kubeconfig of K8s cluster>` to deploy Apigee Hybrid Primary DC
-  primary: /Users/ashwinknaik/codes/git/apigee-hybrid-ansible/ansible/certs/dc1.config
+  primary: /root/.kube/config
   # set `secondary: <Path to kubeconfig of K8s cluster>` to deploy Apigee Hybrid Secondary DC
   # secondary: /tmp/dc2.config
 
