@@ -42,18 +42,11 @@ class Apigee:
             else "Basic {}".format(access_token)  # noqa
         }
 
-    def get_token_user(self, token):
-        url = f"https://www.googleapis.com/oauth2/v1/tokeninfo?access_token={token}"  # noqa
-        response = requests.get(url)
-        if response.status_code == 200:
-            return response.json()['email']
-        return ''
-
     def is_token_valid(self, token):
         url = f"https://www.googleapis.com/oauth2/v1/tokeninfo?access_token={token}"  # noqa
         response = requests.get(url)
         if response.status_code == 200:
-            print(f"Token Validated for user {response.json()['email']}")
+            print("Token Validated")
             return True
         return False
 
@@ -139,18 +132,17 @@ def main():
         args.access_token,
     )
     validations = []
-    authenticated_user = TargetApigee.get_token_user(args.access_token)
     if not TargetApigee.get_org():
-        validations.append(f"Apigee Organization : {apigee_org} doesnt exist OR user {authenticated_user} doesnt have permissions ")  # noqa pylint: disable=line-too-long
+        validations.append(f"Apigee Organization : {apigee_org} doesnt exist OR user doesnt have permissions ")  # noqa pylint: disable=line-too-long
 
     for apigee_env in apigee_envs:
         if not TargetApigee.get_environment(apigee_env['name']):
-            validations.append(f"Apigee Environment : {apigee_env['name']} doesnt exist OR user {authenticated_user} doesnt have permissions ")  # noqa pylint: disable=line-too-long
+            validations.append(f"Apigee Environment : {apigee_env['name']} doesnt exist OR user doesnt have permissions ")  # noqa pylint: disable=line-too-long
 
     for apigee_vhost in apigee_vhosts:
         apigee_vhost_status, apigee_vhost_info = TargetApigee.get_env_group(apigee_vhost['name'])  # noqa pylint: disable=line-too-long
         if not apigee_vhost_status:
-            validations.append(f"Apigee Environment Group : {apigee_vhost['name']} doesnt exist OR user {authenticated_user} doesnt have permissions ")  # noqa pylint: disable=line-too-long
+            validations.append(f"Apigee Environment Group : {apigee_vhost['name']} doesnt exist OR user doesnt have permissions ")  # noqa pylint: disable=line-too-long
 
         if apigee_vhost_status:
             apigee_vhost_hostname = apigee_vhost.get('hostnames', [])
