@@ -57,9 +57,6 @@ jobs:
         name: Checkout
         uses: actions/checkout@v2
 
-      - id: commit
-        uses: prompt/actions-commit-hash@v3
-
       - id: auth
         name: Authenticate with Google Cloud
         uses: google-github-actions/auth@v0
@@ -99,9 +96,6 @@ jobs:
         name: Checkout
         uses: actions/checkout@v2
 
-      - id: commit
-        uses: prompt/actions-commit-hash@v3
-
       - id: auth
         name: Authenticate with Google Cloud
         uses: google-github-actions/auth@v0
@@ -123,6 +117,54 @@ jobs:
           bash deploy_terraform.sh ${{ github.workspace }}/test/terraform/runtime-plane-gke
         shell: bash
         working-directory: ./test/scripts
+        env:
+          TF_BACKEND_BUCKET: ${{ secrets.TF_BACKEND_BUCKET }}
+          GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+          GCP_REGION: ${{ secrets.GCP_REGION }}
+
+  deploy-runtime-plane:
+    name: Deploy Apigee Hybrid Runtime GKE Platform
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    needs:
+      - docker-build
+      - deploy-runtime-plane-gke
+      - deploy-control-plane
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    steps:
+      - id: checkout
+        name: Checkout
+        uses: actions/checkout@v2
+
+      - id: commit
+        uses: prompt/actions-commit-hash@v3
+
+      - id: auth
+        name: Authenticate with Google Cloud
+        uses: google-github-actions/auth@v0
+        with:
+          token_format: access_token
+          workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_POOL_PROVIDER_NAME }}
+          service_account: ${{ secrets.SVC_ACCOUNT_EMAIL }}
+          access_token_lifetime: 300s
+
+      - name: Login to Artifact Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.GCP_REGION }}-docker.pkg.dev
+          username: oauth2accesstoken
+          password: ${{ steps.auth.outputs.access_token }}
+
+      - name: Run Terraform
+        id: init
+        run: |
+          docker run -v ${{ github.workspace }}:/app \
+             ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.GCP_GAR_REPO }}/ansible-helm-apigee-hybrid-deployer:${{ steps.commit.outputs.short }} \
+            cd /app && ansible-playbook playbook.yaml --list-tags
+        shell: bash
+        # working-directory: ./test/scripts
         env:
           TF_BACKEND_BUCKET: ${{ secrets.TF_BACKEND_BUCKET }}
           GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
