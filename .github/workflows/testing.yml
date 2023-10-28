@@ -124,12 +124,12 @@ jobs:
 
   deploy-runtime-plane:
     name: Deploy Apigee Hybrid Runtime GKE Platform
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     if: github.event_name == 'push'
-    needs:
-      - docker-build
-      - deploy-runtime-plane-gke
-      - deploy-control-plane
+    # needs:
+    #   - docker-build
+    #   - deploy-runtime-plane-gke
+    #   - deploy-control-plane
     permissions:
       contents: 'read'
       id-token: 'write'
@@ -149,6 +149,7 @@ jobs:
           workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_POOL_PROVIDER_NAME }}
           service_account: ${{ secrets.SVC_ACCOUNT_EMAIL }}
           access_token_lifetime: 300s
+          create_credentials_file: true
 
       - name: Login to Artifact Registry
         uses: docker/login-action@v1
@@ -157,15 +158,17 @@ jobs:
           username: oauth2accesstoken
           password: ${{ steps.auth.outputs.access_token }}
 
-      - name: Run Terraform
+      - name: Run Ansible Playbook
         id: init
         run: |
-          docker run -v ${{ github.workspace }}:/app \
-             ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.GCP_GAR_REPO }}/ansible-helm-apigee-hybrid-deployer:${{ steps.commit.outputs.short }} \
-            cd /app && ansible-playbook playbook.yaml --list-tags
+          bash run_playbook.sh \
+            ${{ github.workspace }} latest
         shell: bash
-        # working-directory: ./test/scripts
+        working-directory: ./test/scripts 
         env:
           TF_BACKEND_BUCKET: ${{ secrets.TF_BACKEND_BUCKET }}
           GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
           GCP_REGION: ${{ secrets.GCP_REGION }}
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.auth.outputs.credentials_file_path }}
+          GCP_GAR_REPO: ${{ secrets.GCP_GAR_REPO }}
+          GCP_ACCESS_TOKEN: ${{ steps.auth.outputs.access_token }}
