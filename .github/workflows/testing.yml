@@ -123,7 +123,7 @@ jobs:
           GCP_REGION: ${{ secrets.GCP_REGION }}
 
   deploy-runtime-plane:
-    name: Deploy Apigee Hybrid Runtime GKE Platform
+    name: Deploy Apigee Hybrid Cluster
     runs-on: self-hosted
     if: github.event_name == 'push'
     # needs:
@@ -162,7 +162,7 @@ jobs:
         id: init
         run: |
           bash run_playbook.sh \
-            ${{ github.workspace }} latest
+            ${{ github.workspace }} ${{ steps.commit.outputs.short }}
         shell: bash
         working-directory: ./test/scripts
         env:
