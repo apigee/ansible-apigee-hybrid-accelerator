@@ -80,8 +80,6 @@ envs:
     runtime:
       replicaCountMax: {{ each_env.get('runtime',{}).get('replicaCountMax',{}) if each_env.get('runtime',{}).get('replicaCountMax',{}) else '' }}
       replicaCountMin: {{ each_env.get('runtime',{}).get('replicaCountMin',{}) if each_env.get('runtime',{}).get('replicaCountMin',{}) else '' }}
-  serviceAccountPaths:
-    synchronizer:
   serviceAccountSecretRefs:
     synchronizer: {{ svc_account(create_service_account, deployment_environment,'synchronizer', overrides.synchronizer.serviceAccountRef) | indent( width=4)}}
     udca: {{ svc_account(create_service_account, deployment_environment,'udca', overrides.udca.serviceAccountRef) | indent( width=4)}}
