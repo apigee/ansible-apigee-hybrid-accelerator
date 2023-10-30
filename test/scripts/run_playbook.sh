@@ -47,11 +47,10 @@ docker run --name "${CONTAINER_NAME}"\
       gcloud container clusters get-credentials apigee-hybrid-cicd-test --region $GCP_REGION --project $GCP_PROJECT_ID; \
       ansible-playbook playbook.yaml --tags 'dc1' -e @vars/test.yaml"
 
-LOG_DUMP=$(mktemp -d)
-docker cp "$CONTAINER_NAME:/tmp/setup" "$LOG_DUMP"
-gsutil -m cp -r "$LOG_DUMP" "gs://$TF_BACKEND_BUCKET/ansible_run_log/$GIT_COMMIT_SHORT_ID"
-
 CONTAINER_EXIT_CODE=$(docker inspect "$CONTAINER_NAME" --format='{{.State.ExitCode}}')
 if [ "$CONTAINER_EXIT_CODE" -ne 0 ]; then
+  LOG_DUMP=$(mktemp -d)
+  docker cp "$CONTAINER_NAME:/tmp/setup" "$LOG_DUMP"
+  gsutil -m cp -r "$LOG_DUMP" "gs://$TF_BACKEND_BUCKET/ansible_run_log/$GIT_COMMIT_SHORT_ID"
   exit 1
 fi
