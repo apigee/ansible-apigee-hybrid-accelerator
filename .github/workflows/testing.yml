@@ -126,10 +126,10 @@ jobs:
     name: Deploy Apigee Hybrid Cluster
     runs-on: self-hosted
     if: github.event_name == 'push'
-    # needs:
-    #   - docker-build
-    #   - deploy-runtime-plane-gke
-    #   - deploy-control-plane
+    needs:
+      - docker-build
+      - deploy-runtime-plane-gke
+      - deploy-control-plane
     permissions:
       contents: 'read'
       id-token: 'write'
