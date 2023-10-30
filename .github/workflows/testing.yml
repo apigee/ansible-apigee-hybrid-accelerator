@@ -162,7 +162,8 @@ jobs:
         id: init
         run: |
           bash run_playbook.sh \
-            ${{ github.workspace }} ${{ steps.commit.outputs.short }}
+            ${{ github.workspace }} \
+            ${{ steps.commit.outputs.short }}
         shell: bash
         working-directory: ./test/scripts
         env:

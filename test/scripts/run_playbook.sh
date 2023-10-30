@@ -32,15 +32,26 @@ function replace_string() {
 replace_string "$ANSIBLE_DIR/vars/test.yaml" "_GCP_PROJECT_ID_" "${GCP_PROJECT_ID}"
 replace_string "$ANSIBLE_DIR/vars/test.yaml" "_GCP_REGION_" "${GCP_REGION}"
 
-docker run -v "$ANSIBLE_DIR:/app" \
+DATE_EPOCH=$(date +%s)
+CONTAINER_NAME="ansible-run-${DATE_EPOCH}"
+
+docker run --name "${CONTAINER_NAME}"\
+    -v "$ANSIBLE_DIR:/app" \
     -v "$GOOGLE_APPLICATION_CREDENTIALS:/svc_account/account.json" \
     -e GOOGLE_APPLICATION_CREDENTIALS=/svc_account/account.json \
     "$GCP_REGION-docker.pkg.dev/$GCP_PROJECT_ID/$GCP_GAR_REPO/ansible-helm-apigee-hybrid-deployer:latest" \
     /bin/bash -c "cd /app; \
       PIPELINE_STATUS=\"success\"; \
+      mkdir -p /tmp/setup; echo \"started\" > /tmp/setup/start.log; \
       gcloud auth login --cred-file=/svc_account/account.json; \
       gcloud container clusters get-credentials apigee-hybrid-cicd-test --region $GCP_REGION --project $GCP_PROJECT_ID; \
-      ansible-playbook playbook.yaml --tags 'dc1' -e @vars/test.yaml || \
-      PIPELINE_STATUS=\"fail\"; \
-      gsutil -m cp -r /tmp/setup gs://$TF_BACKEND_BUCKET/ansible_run_log/$GIT_COMMIT_SHORT_ID;
-      if [ \"$PIPELINE_STATUS\" == \"fail\" ]; then exit 1; fi"
+      ansible-playbook playbook.yaml --tags 'dc1' -e @vars/test.yaml"
+
+LOG_DUMP=$(mktemp -d)
+docker cp "$CONTAINER_NAME:/tmp/setup" "$LOG_DUMP"
+gsutil -m cp -r "$LOG_DUMP" "gs://$TF_BACKEND_BUCKET/ansible_run_log/$GIT_COMMIT_SHORT_ID"
+
+CONTAINER_EXIT_CODE=$(docker inspect "$CONTAINER_NAME" --format='{{.State.ExitCode}}')
+if [ "$CONTAINER_EXIT_CODE" -ne 0 ]; then
+  exit 1
+fi
