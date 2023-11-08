@@ -24,6 +24,7 @@
   tags:
     - dc2
   roles:
+    - { role: prepare-helm, tags: ['prepare-helm'] }
     - { role: apigee-hybrid-overrides, tags: ['generate-overrides']}
   tasks:
     - name: un-deploy environment
@@ -63,6 +64,7 @@
   tags:
     - dc2
   roles:
+    - { role: prepare-helm, tags: ['prepare-helm'] }
     - { role: apigee-hybrid-overrides, tags: ['generate-overrides'] }
     - { role: helm-ops, vars: { release_name: '{{ overrides.gcp.projectID }}', chart_ref: 'apigee-org', release_state: absent }, tags: ['apigeeorg', 'apigeeorgs'] }
     - { role: helm-ops, vars: { release_name: 'datastore', chart_ref: 'apigee-datastore', release_state: absent }, tags: ['ds', 'apigeeds'] }
@@ -87,6 +89,7 @@
   tags:
     - dc1
   roles:
+    - { role: prepare-helm, tags: ['prepare-helm'] }
     - { role: apigee-hybrid-overrides, tags: ['generate-overrides'] }
   tasks:
     - name: un-deploy environment
@@ -126,6 +129,7 @@
   tags:
     - dc1
   roles:
+    - { role: prepare-helm, tags: ['prepare-helm'] }
     - { role: apigee-hybrid-overrides, tags: ['generate-overrides'] }
     - { role: helm-ops, vars: { release_name: '{{ overrides.gcp.projectID }}', chart_ref: 'apigee-org', release_state: absent }, tags: ['apigeeorg', 'apigeeorgs'] }
     - { role: helm-ops, vars: { release_name: 'datastore', chart_ref: 'apigee-datastore', release_state: absent }, tags: ['ds', 'apigeeds'] }
