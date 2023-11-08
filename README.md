@@ -1,5 +1,7 @@
 # Ansible playbooks to deploy Apigee Hybrid using Helm Charts
 
+[![E2E Testing](https://github.com/apigee/ansible-apigee-hybrid-accelerator/actions/workflows/testing.yml/badge.svg)](https://github.com/apigee/ansible-apigee-hybrid-accelerator/actions/workflows/testing.yml)
+
 This repository contains a set of Ansible roles and playbooks to manage the installation, configuration and maintenance of Apigee Hybrid in your environment. Apigee Hybrid components are managed using helm charts through ansible roles.Apigee Hybrid combines the power of Apigee's API management with the flexibility and control of Kubernetes. With this playbooks, you can automate common Apigee Hybrid management tasks, making it easier to deploy, configure, and maintain your Apigee Hybrid clusters.
 
 
@@ -25,24 +27,42 @@ You can use the Apigee terraform [module](https://github.com/GoogleCloudPlatform
 ##### Manual packages to install
 You can follow manual steps  to install the below packages
 
-- `python3 -m pip install requests==2.25.1 jsonschema==4.19.1 jsonschema-specifications==2023.7.1 ansible-core==2.15.5 ansible==8.5.0`
+-  ```
+    python3 -m pip install --no-cache-dir \
+        requests==2.25.1 \
+        jsonschema==4.19.1 \
+        jsonschema-specifications==2023.7.1 \
+        jmespath==1.0.1 \
+        kubernetes==27.2.0 \
+        ansible-core==2.15.5 \
+        ansible==8.5.0
+   ```
 - `helm >3.10`  refer https://helm.sh/docs/intro/install/
 - `gcloud cli`   refer https://cloud.google.com/sdk/docs/install
 - `kubectl`  refer https://cloud.google.com/sdk/docs/components#installing_components
 
+To continue to install follow the [steps](#configure-ansible-variables)
+
 OR
 
-##### Use Ansible to install packages
+##### Use Docker Image
 
-Install [ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
+Install [docker](https://docs.docker.com/engine/install/)
 
-Use the playbook to deploy.
-> NOTE: The `pre-req.yaml` playbook has not been tested on all OS flavours.
-> Use with caution
+Run the below command to build the docker image
+```
+docker build -t <image_name>:<image_tag> .
+```
+
+To run the playbooks using docker
 
 ```
-sudo ansible-playbook pre-req.yaml -e 'install_helm=true' -e 'install_pip=true' -e 'install_helm=true'
+docker run -it  -v $(pwd):/app <image_name>:<image_tag> /bin/bash
+cd /app
 ```
+
+To continue to install follow the [steps](#configure-ansible-variables)
+
 
 ### Configure Ansible Variables
 

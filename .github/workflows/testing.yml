@@ -1,6 +1,9 @@
 name: E2E Testing
 on:
   push:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * *"
 
 jobs:
   docker-build:
