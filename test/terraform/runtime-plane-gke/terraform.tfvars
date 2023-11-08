@@ -25,7 +25,8 @@ service_account_name   = "apigee-gke-svc-account"
 kubernetes_version     = "1.26.7-gke.500"
 master_ipv4_cidr_block = "10.220.0.0/28"
 master_authorized_networks = [
-  { cidr_block = "10.132.0.0/20", display_name = "europe-west1-subnet" }
+  { cidr_block = "10.132.0.0/20", display_name = "europe-west1-subnet" },
+  { cidr_block = "172.17.0.0/16", display_name = "docker-gh-runner" },
 ]
 
 cluster_resource_labels = {
