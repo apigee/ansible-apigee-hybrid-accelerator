@@ -1,0 +1,18 @@
+{% macro proxy_settings(enabled, host, port, scheme, username, password) %}
+{% if enabled  -%}
+httpProxy:
+  host: {{ host }}
+  port: {{ port }}
+  scheme: {{ scheme }}
+  {{ creds(username, password) }}
+{%- endif %}
+{% endmacro %}
+
+
+
+{% macro creds(username, password) %}
+{% if username != ""  -%}
+  username: {{ username }}
+  password: {{ password }}
+{%- endif %}
+{% endmacro %}

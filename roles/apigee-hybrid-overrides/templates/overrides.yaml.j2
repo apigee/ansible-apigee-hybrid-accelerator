@@ -1,5 +1,6 @@
 {% from 'images.j2' import container_image %}
 {% from 'service_account.j2' import svc_account %}
+{% from 'http_proxy.j2' import proxy_settings %}
 namespace: apigee
 gcp:
   region: {{ overrides.gcp.region }}
@@ -19,13 +20,7 @@ imagePullSecrets:
 - name: {{ overrides.imagePullSecrets }}
 {%- endif %}
 
-{% if overrides.httpProxy|default(false) -%}
-httpProxy:
-  host: {{ overrides.httpProxy.host }}
-  port: {{ overrides.httpProxy.port }}
-  scheme: {{ overrides.httpProxy.scheme|default('HTTPS') }}
-{%- endif %}
-
+{{ proxy_settings(overrides.httpProxy|default(false), overrides.httpProxy.host, overrides.httpProxy.port, overrides.httpProxy.scheme|default('HTTPS'), overrides.httpProxy.username|default(''), overrides.httpProxy.password|default('')) }}
 
 {% if overrides.nodeSelector.requiredForScheduling != "" -%}
 nodeSelector:
@@ -84,6 +79,7 @@ envs:
     synchronizer: {{ svc_account(create_service_account, deployment_environment,'synchronizer', overrides.synchronizer.serviceAccountRef) | indent( width=4)}}
     udca: {{ svc_account(create_service_account, deployment_environment,'udca', overrides.udca.serviceAccountRef) | indent( width=4)}}
     runtime: {{ svc_account(create_service_account, deployment_environment,'runtime', overrides.runtime.serviceAccountRef) | indent( width=4)}}
+  {{ proxy_settings(each_env.httpProxy|default(false), each_env.httpProxy.host, each_env.httpProxy.port, each_env.httpProxy.scheme|default('HTTPS'), each_env.httpProxy.username|default(''), each_env.httpProxy.password|default(''))| indent( width=2) }}
 {% endfor %}
 
 mart:
@@ -194,7 +190,7 @@ metrics:
   sdSidecar:
     {{ container_image(overrides.metrics.sdSidecar.image.url,overrides.metrics.sdSidecar.image.tag,overrides.metrics.sdSidecar.image.pullPolicy,) | indent( width=4)}}
   serviceAccountRef: {{ svc_account(create_service_account, deployment_environment,'metrics', overrides.metrics.serviceAccountRef) | indent( width=2)}}
-  {% if overrides.logger.metrics|default('',true) != '' -%}
+  {% if overrides.metrics.proxyURL|default('',true) != '' -%}
   proxyURL: {{ overrides.metrics.proxyURL }}
   {%- endif %}
 
