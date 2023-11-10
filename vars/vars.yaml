@@ -117,17 +117,19 @@ overrides:
   #
   imagePullSecrets:
 
-  # httpProxy:
-    # host: 172.23.3.99
-    # port: 8080
-    # scheme: HTTP
+  httpProxy:
+    host: 172.23.3.99
+    port: 8080
+    scheme: HTTP
+    # username: test
+    # password: test1
 
 
   nodeSelector:
     requiredForScheduling: true
     apigeeRuntime:
       key: "cloud.google.com/gke-nodepool"
-      value: "apigee-runtime"
+      value: "apigee-runtime1"
     apigeeData:
       key: "cloud.google.com/gke-nodepool"
       value: "apigee-data"
@@ -169,6 +171,12 @@ overrides:
         replicaCountMax: 4
       runtime:
         replicaCountMax: 3
+      # httpProxy:
+      #   host: 172.23.3.99
+      #   port: 8080
+      #   scheme: HTTP
+      #   username: testenv
+      #   password: testenv1
 
     - name: test2
 
@@ -313,7 +321,7 @@ overrides:
       requests:
         cpu: 100m
         memory: 250Mi
-    proxyURL:
+    # proxyURL: http://172.23.3.99:8080
   #
   # Apigee Metrics.
   #
@@ -352,7 +360,7 @@ overrides:
         url: "gcr.io/apigee-release/hybrid/apigee-stackdriver-prometheus-sidecar"
         tag: "0.9.0"
         pullPolicy: IfNotPresent
-    proxyURL:
+    # proxyURL: http://172.23.3.99:8080
   # Apigee Connect Agent
   connectAgent:
     serviceAccountRef: apigee-hybrid-secret
