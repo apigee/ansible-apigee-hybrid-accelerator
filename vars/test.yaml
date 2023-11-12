@@ -294,7 +294,7 @@ overrides:
   # Hybrid container logger.
   #
   logger:
-    enabled: false
+    enabled: true
     terminationGracePeriodSeconds: 30
     image:
       url: "gcr.io/apigee-release/hybrid/apigee-fluent-bit"
@@ -309,6 +309,8 @@ overrides:
         cpu: 100m
         memory: 250Mi
     proxyURL:
+    envVars:
+      NO_PROXY: 'kubernetes.default.svc'
   #
   # Apigee Metrics.
   #
