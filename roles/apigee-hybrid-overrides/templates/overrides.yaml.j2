@@ -173,9 +173,16 @@ udca:
         memory: {{ overrides.udca.fluentd.resources.requests.memory }}
 
 logger:
-  enabled: {{ overrides.logger.enabled }}
+  enabled: {{ 'true' if overrides.logger.enabled else 'false' }}
   {{ container_image(overrides.logger.image.url,overrides.logger.image.tag,overrides.logger.image.pullPolicy,) | indent( width=2)}}
   serviceAccountRef: {{ svc_account(create_service_account, deployment_environment,'logger', overrides.logger.serviceAccountRef) | indent( width=2)}}
+  {% if overrides.logger.envVars|default('',true) != '' -%}
+  envVars:
+  {% for key, value in overrides.logger.envVars.items() %}
+  {{ key }}: {{ value }}
+  {% endfor %}
+  {%- endif %}
+
   resources:
     requests:
       cpu: {{ overrides.logger.resources.requests.cpu }}
@@ -183,6 +190,7 @@ logger:
   {% if overrides.logger.proxyURL|default('',true) != '' -%}
   proxyURL: {{ overrides.logger.proxyURL }}
   {%- endif %}
+
 
 metrics:
   prometheus:
