@@ -68,31 +68,44 @@ def _finditem(obj, key, result=[]):
             if item is not None:
                 return item
 
+
 def get_roles(project_id):
     credentials = GoogleCredentials.get_application_default()
     access_token = credentials.get_access_token().access_token
 
     headers = {}
     headers['Authorization'] = f'Bearer {access_token}'
-    uri = f"https://cloudresourcemanager.googleapis.com/v1/projects/{project_id}:getIamPolicy?alt=json"
+    uri = f"https://cloudresourcemanager.googleapis.com/v1/projects/{project_id}:getIamPolicy?alt=json"  # noqa
 
     response = requests.post(uri, headers=headers)
     if response.status_code == 200:
         return True, response
     else:
-        return False, {"error" : json.loads(response.text).get('error',{}).get('message','')}
+        return False, {"error": json.loads(response.text).get('error', {}).get('message','')}  # noqa
+
 
 def get_sa_role(secret_name, namespace, bindings):
     secret = api_instance.read_namespaced_secret(secret_name, namespace)
-    decoded_data = base64.b64decode(secret.data['client_secret.json'])
-    client_secret_data = json.loads(decoded_data)
+    print(secret.data)
+    try:
+        if secret.data is not None:
+            decoded_data = base64.b64decode(secret.data['client_secret.json'])
+            client_secret_data = json.loads(decoded_data)
+        else:
+            return False, {"error": f"{secret_name}'s secret.data is None"}  # noqa
+    except KeyError:
+        return False, {"error": f"File 'client_secret.json' not found in {secret_name}'s secret.data"}  # noqa
+    except json.decoder.JSONDecodeError:
+        return False, {"error": f"client_secret file is not of type json in {secret_name}'s secret.data"}  # noqa
+
     if not client_secret_data.get('client_email', False):
-        return False, {"error" : f"ERROR: Incorrect secret data configuration. 'client_email' not present in {secret_name}'s secret data"}
-    
-    service_account_email = client_secret_data.get('client_email','')
-    bindings = [binding for binding in bindings if service_account_email in [member.split(':')[-1] for member in binding['members'] if member.startswith('serviceAccount:')]]
+        return False, {"error": f"Incorrect secret data configuration. 'client_email' not present in {secret_name}'s secret data"}  # noqa
+
+    service_account_email = client_secret_data.get('client_email', '')
+    bindings = [binding for binding in bindings if service_account_email in [member.split(':')[-1] for member in binding['members'] if member.startswith('serviceAccount:')]]  # noqa
     existing_roles = [binding['role'] for binding in bindings]
     return True, existing_roles
+
 
 def main():
     parser = argparse.ArgumentParser(description='Validates Apigee Objects')
@@ -140,45 +153,46 @@ def main():
             if each_sa not in apigee_secrets:
                 validations.append(f"Service Account Secret: {each_sa} Not found in {apigee_namespace} namespace")  # noqa
 
-        apigee_components = ["mart", "runtime","udca", "logger", "metrics", "watcher","cassandra"]
-        project_id = input_data.get('gcp','').get('projectID','')
+        apigee_components = ["mart", "runtime", "udca", "logger", "metrics", "watcher", "cassandra"]  # noqa
+        project_id = input_data.get('gcp', '').get('projectID', '')
         success, roles_response = get_roles(project_id)
-        
+
         if success:
-            roles_map_file_path = 'roles_map.json'
+            roles_map_file_path = 'roles/validate-input-k8s-cluster/files/roles_map.json'  # noqa
             roles_map = {}
             try:
                 with open(roles_map_file_path, 'r') as file:
                     roles_map = json.load(file)
             except FileNotFoundError:
-                validations.append(f"ERROR: Couldn't perform kubernetes validations. Reason: File '{roles_map_file_path}' not found.")
-            
+                validations.append(f"ERROR: Couldn't perform kubernetes validations. Reason: File '{roles_map_file_path}' not found.")  # noqa
+
             bindings = roles_response.json()['bindings']
             for component in apigee_components:
                 if component == "cassandra":
-                    if input_data.get(component, {}).get('backup', '').get('enabled') == True: 
-                        component_sa = input_data.get(component, {}).get('backup', '').get('serviceAccountRef','')
-                    elif input_data.get(component, {}).get('restore', '').get('enabled') == True:
-                        component_sa = input_data.get(component, {}).get('restore', '').get('serviceAccountRef','')
-                    else: 
+                    if input_data.get(component, {}).get('backup', '').get('enabled'):  # noqa
+                        component_sa = input_data.get(component, {}).get('backup', '').get('serviceAccountRef', '')  # noqa
+                    elif input_data.get(component, {}).get('restore', '').get('enabled'):  # noqa
+                        component_sa = input_data.get(component, {}).get('restore', '').get('serviceAccountRef', '')  # noqa
+                    else:
                         continue
                 else:
-                    component_sa = input_data.get(component, {}).get('serviceAccountRef', '')
-                
-                success_bool, existing_roles = get_sa_role(component_sa, apigee_namespace, bindings)
+                    component_sa = input_data.get(component, {}).get('serviceAccountRef', '')  # noqa
+
+                success_bool, existing_roles = get_sa_role(component_sa, apigee_namespace, bindings)  # noqa
                 if success_bool:
                     req_roles = roles_map.get(f"apigee-{component}", '')
                     for role in req_roles:
                         if role not in existing_roles:
-                            validations.append(f"ERROR: Service Account Secret {component_sa} doesn't have required role({role})")
+                            validations.append(f"ERROR: Service Account Secret {component_sa} doesn't have required role({role})")  # noqa
                 else:
                     error_msg = existing_roles.get("error")
                     validations.append(f"ERROR: {error_msg}")
-                    
+
         else:
+            print("hii")
             error_msg = roles_response.get("error")
-            validations.append(f"ERROR: Couldn't retrieve the roles associated with service accounts. Reason : {error_msg}")
-       
+            validations.append(f"ERROR: Couldn't retrieve the roles associated with service accounts. Reason : {error_msg}")  # noqa
+
     if len(validations) > 0:
         print('Kubernetes validation Errors found !')
         print("\n".join(validations))
