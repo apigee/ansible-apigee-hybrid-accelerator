@@ -54,3 +54,4 @@ if [ "$CONTAINER_EXIT_CODE" -ne 0 ]; then
   gsutil -m cp -r "$LOG_DUMP" "gs://$TF_BACKEND_BUCKET/ansible_run_log/$GIT_COMMIT_SHORT_ID"
   exit 1
 fi
+docker rm "$CONTAINER_NAME" || exit 0
