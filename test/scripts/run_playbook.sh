@@ -39,7 +39,7 @@ docker run --name "${CONTAINER_NAME}"\
     -v "$ANSIBLE_DIR:/app" \
     -v "$GOOGLE_APPLICATION_CREDENTIALS:/svc_account/account.json" \
     -e GOOGLE_APPLICATION_CREDENTIALS=/svc_account/account.json \
-    "$GCP_REGION-docker.pkg.dev/$GCP_PROJECT_ID/$GCP_GAR_REPO/ansible-helm-apigee-hybrid-deployer:latest" \
+    "$GCP_REGION-docker.pkg.dev/$GCP_PROJECT_ID/$GCP_GAR_REPO/ansible-helm-apigee-hybrid-deployer:$GIT_COMMIT_SHORT_ID" \
     /bin/bash -c "cd /app; \
       PIPELINE_STATUS=\"success\"; \
       mkdir -p /tmp/setup; echo \"started\" > /tmp/setup/start.log; \
