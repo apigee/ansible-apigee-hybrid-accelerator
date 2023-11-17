@@ -1,0 +1,24 @@
+{
+    "apigee-cassandra": [
+        "roles/storage.objectAdmin"
+    ],
+    "apigee-logger": [
+        "roles/logging.logWriter"
+    ],
+    "apigee-mart": [
+        "roles/apigeeconnect.Agent"
+    ],
+    "apigee-metrics": [
+        "roles/monitoring.metricWriter"
+    ],
+    "apigee-runtime": [],
+    "apigee-synchronizer": [
+        "roles/apigee.synchronizerManager"
+    ],
+    "apigee-udca": [
+        "roles/apigee.analyticsAgent"
+    ],
+    "apigee-watcher": [
+        "roles/apigee.runtimeAgent"
+    ]
+}
