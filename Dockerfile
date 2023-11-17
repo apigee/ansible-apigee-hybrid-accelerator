@@ -9,6 +9,7 @@ RUN apk add --update --no-cache py-pip==23.1.2-r0 openssh==9.3_p2-r0 && \
         jsonschema-specifications==2023.7.1 \
         jmespath==1.0.1 \
         kubernetes==27.2.0 \
+        oauth2client==4.1.3 \
         ansible-core==2.15.5 \
         ansible==8.5.0 && \
     ansible-galaxy collection install ansible.posix && \
