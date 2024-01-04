@@ -12,6 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 ---
-# defaults file for apigee-control-plane-check
-k8s_validation_status: true
-custom_cassandra_storage_class: ""
+# tasks file for apigee-custom-sc role
+
+- name: Create custom storage class if not present
+  kubernetes.core.k8s:
+    state: present
+    template: templates/sc.yaml.j2
+  when: storageClassName != ""

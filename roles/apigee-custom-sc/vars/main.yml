@@ -12,6 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 ---
-# defaults file for apigee-control-plane-check
-k8s_validation_status: true
-custom_cassandra_storage_class: ""
+# vars file for apigee-custom-sc
