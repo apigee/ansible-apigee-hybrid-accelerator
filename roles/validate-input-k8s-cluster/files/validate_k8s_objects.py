@@ -40,6 +40,7 @@ apps_api = client.AppsV1Api()
 DEFAULT_CASSANDRA_STATEFULSET = "apigee-cassandra-default"
 DEFAULT_APIGEE_NAMESPACE = "apigee"
 
+
 def check_api_server():
     timeout = 2
     try:
@@ -58,26 +59,30 @@ def check_nodes(label_selector):
     else:
         return False
 
+
 def can_deploy_statefulset(storage_class_name):
     namespace = DEFAULT_APIGEE_NAMESPACE
     try:
         api_instance.read_namespace(name=namespace)
-        statefulset = apps_api.read_namespaced_stateful_set(name=DEFAULT_CASSANDRA_STATEFULSET, namespace=namespace)
+        statefulset = apps_api.read_namespaced_stateful_set(
+            name=DEFAULT_CASSANDRA_STATEFULSET,
+            namespace=namespace)
     except ApiException as e:
         print(f"not found: {e}")
         if e.status == 404:
             return True
 
-    storage_classes = set()
     claims = statefulset.spec.volume_claim_templates
     if len(claims) > 1:
         raise Exception("statefulset contains more than one volume claim")
-    volume_claim_template = claims[0]
-    if not volume_claim_template.metadata.annotations:
+    vct = claims[0]
+    if not vct.metadata.annotations:
         return False
-    if "volume.beta.kubernetes.io/storage-class" not in volume_claim_template.metadata.annotations:
+    if "volume.beta.kubernetes.io/storage-class" not in \
+            vct.metadata.annotations:
         return False
-    storage_class = volume_claim_template.metadata.annotations["volume.beta.kubernetes.io/storage-class"]
+    storage_class = \
+        vct.metadata.annotations["volume.beta.kubernetes.io/storage-class"]
     if storage_class_name != storage_class:
         return False
     return True
@@ -141,7 +146,10 @@ def main():
     parser.add_argument('--input_data', help='Apigee Input data', required=True)  # noqa
     parser.add_argument('--generate_certificates', help='SSL Certs need to be generated', default='True')  # noqa
     parser.add_argument('--create_service_account', help='Service Account Secrets need to be created', default='True')  # noqa
-    parser.add_argument('--cassandra_storage_class', help='In case a custom storage class is used for cassandra, this argument validates if the deployment can proceed with the existing storage class', required=False, default='')
+    parser.add_argument('--cassandra_storage_class', help='In case a custom \
+        storage class is used for cassandra, this argument validates if the \
+        deployment can proceed with the existing storage class',
+                        required=False, default='')
     args = parser.parse_args()
     input_data = json.loads(args.input_data)
     apigee_vhosts = input_data.get('virtualhosts', [])
@@ -227,9 +235,12 @@ def main():
         storage_class_name = args.cassandra_storage_class
         if storage_class_name != "":
             if not can_deploy_statefulset(storage_class_name):
-                validations.append(f"ERROR: You cannot change the storage class of an existing statefulset, current storage class: {storage_class_name}") 
+                validations.append(f"ERROR: You cannot change the storage \
+                class of an existing statefulset, current storage class: \
+                 {storage_class_name}")
     except Exception as e:
-        validations.append(f"ERROR: There was an error validating statefulsets. Reason: {e}") 
+        validations.append(f"ERROR: There was an error \
+        validating statefulsets. Reason: {e}")
 
     if len(validations) > 0:
         print('Kubernetes validation Errors found !')
