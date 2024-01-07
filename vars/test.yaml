@@ -173,7 +173,7 @@ overrides:
     replicaCountMax: 2
     image:
       url: "gcr.io/apigee-release/hybrid/apigee-mart-server"
-      tag: "1.10.3"
+      tag: "1.11.1"
       pullPolicy: IfNotPresent
     resources:
       requests:
@@ -183,7 +183,7 @@ overrides:
   mintTaskScheduler:
     image:
       url: "gcr.io/apigee-release/hybrid/apigee-mint-task-scheduler"
-      tag: "1.10.3"
+      tag: "1.11.1"
       pullPolicy: IfNotPresent
     resources:
       requests:
@@ -198,7 +198,7 @@ overrides:
     serviceAccountRef: apigee-hybrid-secret
     image:
       url: "gcr.io/apigee-release/hybrid/apigee-synchronizer"
-      tag: "1.10.3"
+      tag: "1.11.1"
       pullPolicy: IfNotPresent
     resources:
       requests:
@@ -213,7 +213,7 @@ overrides:
     replicaCountMax: 4
     image:
       url: "gcr.io/apigee-release/hybrid/apigee-runtime"
-      tag: "1.10.3"
+      tag: "1.11.1"
       pullPolicy: IfNotPresent
     resources:
       requests:
@@ -228,7 +228,7 @@ overrides:
       secret: ""
       image:
         url: "gcr.io/apigee-release/hybrid/apigee-hybrid-cassandra-client"
-        tag: "1.10.3"
+        tag: "1.11.1"
         pullPolicy: IfNotPresent
     replicaCount: 3
     # multiRegionSeedHost:
@@ -241,7 +241,7 @@ overrides:
       capacity: 10Gi
     image:
       url: "gcr.io/apigee-release/hybrid/apigee-hybrid-cassandra"
-      tag: "1.10.3"
+      tag: "1.11.1"
       pullPolicy: IfNotPresent
     resources:
       requests:
@@ -254,7 +254,7 @@ overrides:
       enabled: false
       image:
         url: "gcr.io/apigee-release/hybrid/apigee-cassandra-backup-utility"
-        tag: "1.10.3"
+        tag: "1.11.1"
         pullPolicy: IfNotPresent
       serviceAccountRef: apigee-hybrid-secret
       schedule: "0 2 * * *"
@@ -264,7 +264,7 @@ overrides:
       snapshotTimestamp:
       image:
         url: "gcr.io/apigee-release/hybrid/apigee-cassandra-backup-utility"
-        tag: "1.10.3"
+        tag: "1.11.1"
         pullPolicy: IfNotPresent
       serviceAccountRef: apigee-hybrid-secret
       dbStorageBucket: ""
@@ -277,7 +277,7 @@ overrides:
     replicaCountMax: 4
     image:
       url: "gcr.io/apigee-release/hybrid/apigee-udca"
-      tag: "1.10.3"
+      tag: "1.11.1"
       pullPolicy: IfNotPresent
     resources:
       requests:
@@ -302,7 +302,7 @@ overrides:
     terminationGracePeriodSeconds: 30
     image:
       url: "gcr.io/apigee-release/hybrid/apigee-fluent-bit"
-      tag: "2.1.8"
+      tag: "2.2.0"
       pullPolicy: IfNotPresent
     serviceAccountRef: apigee-hybrid-secret
     resources:
@@ -340,13 +340,13 @@ overrides:
     adapter:
       image:
         url: "gcr.io/apigee-release/hybrid/apigee-prometheus-adapter"
-        tag: "v0.11.0"
+        tag: "v0.11.2"
         pullPolicy: IfNotPresent
       serviceAccountRef: apigee-hybrid-secret
     prometheus:
       image:
         url: "gcr.io/apigee-release/hybrid/apigee-prom-prometheus"
-        tag: "v2.45.0"
+        tag: "v2.48.0"
         pullPolicy: IfNotPresent
     sdSidecar:
       image:
@@ -359,7 +359,7 @@ overrides:
     serviceAccountRef: apigee-hybrid-secret
     image:
       url: "gcr.io/apigee-release/hybrid/apigee-connect-agent"
-      tag: "1.10.3"
+      tag: "1.11.1"
       pullPolicy: IfNotPresent
     replicaCountMin: 1
     replicaCountMax: 1
@@ -372,7 +372,7 @@ overrides:
     serviceAccountRef: apigee-hybrid-secret
     image:
       url: "gcr.io/apigee-release/hybrid/apigee-watcher"
-      tag: "1.10.3"
+      tag: "1.11.1"
       pullPolicy: IfNotPresent
     replicaCountMin: 1
     replicaCountMax: 1
@@ -384,7 +384,7 @@ overrides:
   redis:
     image:
       url: "gcr.io/apigee-release/hybrid/apigee-redis"
-      tag: "1.10.3"
+      tag: "1.11.1"
       pullPolicy: IfNotPresent
     replicaCount: 2
     resources:
@@ -404,7 +404,7 @@ overrides:
   ao:
     image:
       url: "gcr.io/apigee-release/hybrid/apigee-operators"
-      tag: "1.10.3"
+      tag: "1.11.1"
       pullPolicy: IfNotPresent
     resources:
       limits:
@@ -416,20 +416,20 @@ overrides:
     installer:
       image:
         url: "gcr.io/apigee-release/hybrid/apigee-installer"
-        tag: "1.10.3"
+        tag: "1.11.1"
         pullPolicy: IfNotPresent
   # kube rbac proxy
   kubeRBACProxy:
     image:
       url: "gcr.io/apigee-release/hybrid/apigee-kube-rbac-proxy"
-      tag: "v0.14.2"
+      tag: "v0.15.0"
       pullPolicy: IfNotPresent
 
   # Apigee istiod.
   istiod:
     image:
       url: "gcr.io/apigee-release/hybrid/apigee-asm-istiod"
-      tag: "1.17.2-asm.8-distroless"
+      tag: "1.17.8-asm.4-distroless"
       pullPolicy: IfNotPresent
     resources:
       limits:
@@ -444,7 +444,7 @@ overrides:
   ingressGateway:
     image:
       url: "gcr.io/apigee-release/hybrid/apigee-asm-ingress"
-      tag: "1.17.2-asm.8-distroless"
+      tag: "1.17.8-asm.4-distroless"
       pullPolicy: IfNotPresent
     resources:
       limits:
