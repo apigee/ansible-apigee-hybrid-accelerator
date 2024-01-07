@@ -1,4 +1,4 @@
-FROM google/cloud-sdk:alpine
+FROM google/cloud-sdk:458.0.0-alpine
 ENV HELM_BASE_URL="https://get.helm.sh"
 ENV HELM_VERSION="3.13.1"
 SHELL ["/bin/ash", "-eo", "pipefail", "-c"]
