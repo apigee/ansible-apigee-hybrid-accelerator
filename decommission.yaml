@@ -74,6 +74,7 @@
     - { role: helm-ops, vars: { release_name: 'operator', chart_ref: 'apigee-operator', release_namespace: 'apigee-system', create_namespace: true, release_state: absent }, tags: ['ao'] }
     - { role: cert-manager, vars: { cert_manager_status: absent }, tags: ['cert-manager'] }
     - { role: kubectl-ops, vars: { operation: patch, k8s_resource_type: ApigeeDatastore, k8s_resource: default, k8s_namespace: apigee, kubectl_args: "-p '{\"metadata\":{\"finalizers\":[]}}' --type=merge"}, tags: ['ds-decomm'] }
+    - { role: kubectl-ops, vars: { operation: delete, k8s_resource_type: sc, k8s_resource: '{{ overrides.cassandra.storage.storageClass }}', k8s_namespace: apigee}, tags: ['ds-decomm'], when: overrides.cassandra.storage.storageClass != "" }
     - { role: kubectl-ops, vars: { operation: delete, k8s_resource_type: namespace, k8s_resource: apigee, kubectl_args: '--ignore-not-found=true' }, tags: ['ns-decomm'] }
     - { role: kubectl-ops, vars: { operation: delete, k8s_resource_type: namespace, k8s_resource: apigee-system, kubectl_args: '--ignore-not-found=true' }, tags: ['ns-decomm'] }
 
@@ -139,5 +140,6 @@
     - { role: helm-ops, vars: { release_name: 'operator', chart_ref: 'apigee-operator', release_namespace: 'apigee-system', create_namespace: true, release_state: absent }, tags: ['ao'] }
     - { role: cert-manager, vars: { cert_manager_status: absent }, tags: ['cert-manager'] }
     - { role: kubectl-ops, vars: { operation: patch, k8s_resource_type: ApigeeDatastore, k8s_resource: default, k8s_namespace: apigee, kubectl_args: "-p '{\"metadata\":{\"finalizers\":[]}}' --type=merge"}, tags: ['ds-decomm'] }
+    - { role: kubectl-ops, vars: { operation: delete, k8s_resource_type: sc, k8s_resource: '{{ overrides.cassandra.storage.storageClass }}', k8s_namespace: apigee}, tags: ['ds-decomm'], when: overrides.cassandra.storage.storageClass != "" }
     - { role: kubectl-ops, vars: { operation: delete, k8s_resource_type: namespace, k8s_resource: apigee, kubectl_args: '--ignore-not-found=true' }, tags: ['ns-decomm'] }
     - { role: kubectl-ops, vars: { operation: delete, k8s_resource_type: namespace, k8s_resource: apigee-system, kubectl_args: '--ignore-not-found=true' }, tags: ['ns-decomm'] }

@@ -1,0 +1,17 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: {{ storageClassName }}
+{% if storageClassType == 'aks' -%}
+  provisioner: azuredisk.csi.azure.com
+{% elif storageClassType == 'gke' -%}
+  provisioner: pd.csi.storage.gke.io
+{% elif storageClassType == 'anthos-vsphere-csi' -%}
+  provisioner: csi.vsphere.vmware.com
+{% elif storageClassType == 'eks' -%}
+  provisioner: ebs.csi.aws.com
+{%- endif %}
+volumeBindingMode: WaitForFirstConsumer
+reclaimPolicy: Delete
+parameters:
+  {{ scParameters }}

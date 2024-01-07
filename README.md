@@ -184,6 +184,13 @@ To update the Apigee Virtual Hosts.
 ansible-playbook playbook.yaml -e @vars/vars.yaml  --tags "validate-input,generte-overrides,apigee-virtualhost,wait_virtualhost,validate"
 ```
 
+#### Cassandra Custom Storage Classes
+To use custom storage classes for cassandra statefulsets, you can populate the `storageClass` parameter in the vars file that you are using. By defining a custom storage class, it will first be created in your cluster and then set as the storage class of the cassandra statefulsets. You will also need to specify the `provisionerType` and the `parameters`. You can use the following provisioners:
+- gke 
+- aks
+- eks
+- anthos-vsphere-csi
+*Note: If you face any issues with any of the provisioners, please create a github issue in this repository*
 
 ## Limitations
 * Refer [link](https://cloud.google.com/apigee/docs/hybrid/preview/helm-install#limitations)

@@ -24,7 +24,8 @@
         validate_k8s_objects.py \
         --input_data '{{ overrides_string }}' \
         --generate_certificates '{{ generate_certificates }}' \
-        --create_service_account '{{ create_service_account }}'
+        --create_service_account '{{ create_service_account }}' \
+        --cassandra_storage_class '{{ custom_cassandra_storage_class }}'
       register: validate_k8s
 
     - name: Check validate kubernetes operation output

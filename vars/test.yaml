@@ -233,7 +233,11 @@ overrides:
     replicaCount: 3
     # multiRegionSeedHost:
     storage:
-      storageclass:
+      storageClass: custom-sc
+      storageClassProperties:
+        provisionerType: gke # one of gke, anthos-on-vmware, aks, eks
+        parameters:
+          type: pd-balanced
       capacity: 10Gi
     image:
       url: "gcr.io/apigee-release/hybrid/apigee-hybrid-cassandra"

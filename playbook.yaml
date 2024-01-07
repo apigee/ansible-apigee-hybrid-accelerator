@@ -26,7 +26,7 @@
   roles:
     - { role: validate-input, tags: ['validate-input'] }
     - { role: validate-input-apigee-control-plane, tags: ['validate-input', 'validate-input-apigee'] }
-    - { role: validate-input-k8s-cluster, tags: ['validate-input', 'validate-input-k8s'] }
+    - { role: validate-input-k8s-cluster, vars: { custom_cassandra_storage_class: '{{ overrides.cassandra.storage.storageClass }}' }, tags: ['validate-input', 'validate-input-k8s'] }
     - { role: cert-manager, tags: ['cert-manager'] }
     - { role: certificates, vars: { generate_certificates: true }, tags: ['certs'] }
     - { role: prepare-helm, tags: ['prepare-helm'] }
@@ -34,6 +34,7 @@
     - { role: enable-apigee-synchronizer, tags: ['enable-synchronizer'] }
     - { role: bootstrap-apigee-crds, tags: ['bootstrap-apigee-crds'] }
     - { role: apigee-hybrid-overrides, tags: ['generate-overrides'] }
+    - { role: apigee-custom-sc, vars: { storageClassName: '{{ overrides.cassandra.storage.storageClass }}', storageClassType: '{{ overrides.cassandra.storage.storageClassProperties.provisionerType }}', scParameters: '{{ overrides.cassandra.storage.storageClassProperties.parameters }}' }, tags: ['create-custom-sc'] }
     - { role: helm-ops, vars: { release_name: 'operator', chart_ref: 'apigee-operator', release_namespace: 'apigee-system', create_namespace: true}, tags: ['ao'] }
     - { role: wait-for-k8s-resource, vars: { k8s_api_version: v1, k8s_kind: Deployment, k8s_namespace: apigee-system, k8s_resource_name: apigee-controller-manager}, tags: ['ao', 'wait_ao'] }
     - { role: helm-ops, vars: { release_name: 'datastore', chart_ref: 'apigee-datastore'}, tags: ['ds', 'apigeeds'] }
@@ -111,7 +112,7 @@
   roles:
     - { role: validate-input, tags: ['validate-input'] }
     - { role: validate-input-apigee-control-plane, tags: ['validate-input', 'validate-input-apigee'] }
-    - { role: validate-input-k8s-cluster, tags: ['validate-input', 'validate-input-k8s'] }
+    - { role: validate-input-k8s-cluster, vars: { custom_cassandra_storage_class: '{{ overrides.cassandra.storage.storageClass }}' }, tags: ['validate-input', 'validate-input-k8s'] }
     - { role: cert-manager, tags: ['cert-manager'] }
     - { role: kubectl-ops, vars: { operation: get, k8s_resource_type: namespace, k8s_resource: apigee, kubectl_args: '--kubeconfig {{ kubeconfigs.primary }} -o yaml > {{ setup_path }}/apigee-namespace.yaml'}, tags: ['dc2-prereq'] }
     - { role: kubectl-ops, vars: { operation: get, k8s_resource_type: secret, k8s_resource: apigee-ca, k8s_namespace: cert-manager, kubectl_args: '--kubeconfig {{ kubeconfigs.primary }} -o yaml > {{ setup_path }}/apigee-ca.yaml'}, tags: ['dc2-prereq'] }
@@ -124,6 +125,7 @@
     - { role: bootstrap-apigee-crds, tags: ['bootstrap-apigee-crds'] }
     - { role: get-cassandra-seed, vars: { kubeconfig: "{{ kubeconfigs.primary }}" }, tags: ['cass-seed'] }
     - { role: apigee-hybrid-overrides, vars: { cassandra_seed_host: "{{ cassandra_seed_data }}"}, tags: ['generate-overrides'] }
+    - { role: apigee-custom-sc, vars: { storageClassName: '{{ overrides.cassandra.storage.storageClass }}', storageClassType: '{{ overrides.cassandra.storage.storageClassProperties.provisionerType }}', scParameters: '{{ overrides.cassandra.storage.storageClassProperties.parameters }}' }, tags: ['create-custom-sc'] }
     - { role: helm-ops, vars: { release_name: 'operator', chart_ref: 'apigee-operator', release_namespace: 'apigee-system', create_namespace: true}, tags: ['ao'] }
     - { role: wait-for-k8s-resource, vars: { k8s_api_version: v1, k8s_kind: Deployment, k8s_namespace: apigee-system, k8s_resource_name: apigee-controller-manager}, tags: ['ao', 'wait_ao'] }
     - { role: helm-ops, vars: { release_name: 'datastore', chart_ref: 'apigee-datastore'}, tags: ['ds', 'apigeeds'] }

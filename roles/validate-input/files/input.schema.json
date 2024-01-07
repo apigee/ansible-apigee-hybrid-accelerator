@@ -472,14 +472,30 @@
             "storage": {
               "type": "object",
               "properties": {
-                "storageclass": {
-                  "type": ["string", "null"]
+                "storageClass": {
+                  "type": ["string", "null"] 
+                },
+                "storageClassProperties": {
+                  "type": "object",
+                  "required": ["provisionerType", "parameters"],
+                  "properties": {
+                    "provisionerType": {
+                      "type": "string",
+                      "enum": ["eks", "aks", "anthos-vsphere-csi", "gke"]
+                    },
+                    "parameters": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "string"
+                      }
+                    } 
+                  }
                 },
                 "capacity": {
                   "type": "string"
                 }
               },
-              "required": ["storageclass", "capacity"]
+              "required": ["storageClass", "capacity"]
             },
             "image": {
               "type": "object",
