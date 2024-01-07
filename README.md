@@ -16,6 +16,7 @@ The Ansible playbooks in this repository support a wide range of the installatio
 | Multi-Region Deployment | Apigee Hybrid Multi region deployment|
 | DC Decomission | Apigee Hybrid single or all region/DC decommission  |
 | Apigee Hybrid Component management | Apigee Hybrid component configuration/re-configuration/decommission. |
+| Apigee Upgrade | Apigee Hybrid Upgrade 1.10.x to 1.11.x |
 
 ### Prerequisites
 
