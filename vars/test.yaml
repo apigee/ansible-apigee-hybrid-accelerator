@@ -18,7 +18,7 @@ setup_path: "/tmp/setup"
 
 # Set `cert_manager_version: : v1.7.2` refer: https://cloud.google.com/apigee/docs/hybrid/v1.10/install-cert-manager
 install_cert_manager: true
-cert_manager_version: v1.7.2
+cert_manager_version: v1.13.3
 
 ################################################ TLS certificate details ################################################
 
@@ -51,7 +51,7 @@ synchronizer_prod_svc_account: apigee-synchronizer
 # refer: https://cloud.google.com/apigee/docs/hybrid/preview/helm-install#pull-apigee-helm-charts
 
 helm_chart_repo: oci://us-docker.pkg.dev/apigee-release/apigee-hybrid-helm-charts
-helm_chart_version: 1.10.3
+helm_chart_version: 1.11.1
 helm_charts:
   - apigee-operator
   - apigee-datastore
