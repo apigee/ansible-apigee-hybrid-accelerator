@@ -22,7 +22,7 @@ subnetwork             = "default"
 ip_range_pods          = "pods"
 ip_range_services      = "svc"
 service_account_name   = "apigee-gke-svc-account"
-kubernetes_version     = "1.26.7-gke.500"
+kubernetes_version     = "1.27.3-gke.100"
 master_ipv4_cidr_block = "10.220.0.0/28"
 master_authorized_networks = [
   { cidr_block = "10.132.0.0/20", display_name = "europe-west1-subnet" },
