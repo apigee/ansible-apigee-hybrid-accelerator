@@ -19,6 +19,12 @@ variable "project_id" {
   type        = string
 }
 
+variable "billing_type" {
+  description = "Billing type of the Apigee organization."
+  type        = string
+  default     = "EVALUATION"
+}
+
 variable "deployment_environment" {
   description = "Apigee Deployment Env. prod OR non-prod"
   type        = string
