@@ -46,6 +46,7 @@ module "apigee" {
     description      = var.org_description
     runtime_type     = "HYBRID"
     analytics_region = var.ax_region
+    billing_type     = var.billing_type
   }
   envgroups    = var.apigee_envgroups
   environments = var.apigee_environments
