@@ -105,7 +105,7 @@ overrides:
     region: _GCP_REGION_
     projectID: _GCP_PROJECT_ID_
   revision: "1103"
-  instanceID: "asdasdmasdmasmd"
+  instanceID: "wwwwxxxxyyyyzzzz"
   #
   # For Telemetry support for Multi-Org cluster. The feature is disabled by default.
   # Enabling this flag will export the metrics from Multi-Org cluster to the
