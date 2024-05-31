@@ -119,7 +119,24 @@
           "type": ["string", "null"]
         },
         "httpProxy": {
-          "type": ["string", "null"]
+          "type": "object",
+          "properties": {
+            "host": {
+              "type": "string"
+            },
+            "port": {
+              "type": ["string", "number"]
+            },
+            "scheme": {
+              "type": "string"
+            },
+            "username": {
+              "type": "string"
+            },
+            "password": {
+              "type": "string"
+            }
+          }
         },
         "nodeSelector": {
           "type": "object",
@@ -797,8 +814,7 @@
             "terminationGracePeriodSeconds",
             "image",
             "serviceAccountRef",
-            "resources",
-            "proxyURL"
+            "resources"
           ]
         },
         "metrics": {
@@ -959,8 +975,7 @@
             "proxyStackdriverExporter",
             "adapter",
             "prometheus",
-            "sdSidecar",
-            "proxyURL"
+            "sdSidecar"
           ]
         },
         "connectAgent": {
