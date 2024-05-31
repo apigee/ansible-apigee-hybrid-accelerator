@@ -16,6 +16,7 @@
 
 module "gke" {
   source                     = "terraform-google-modules/kubernetes-engine/google//modules/beta-private-cluster-update-variant"
+  version                    = "31.0.0"
   project_id                 = var.project_id
   name                       = var.cluster_name
   region                     = var.region
