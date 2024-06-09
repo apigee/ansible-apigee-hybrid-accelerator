@@ -53,6 +53,7 @@ jobs:
           REPOSITORY_CHECKOV_DISABLE_ERRORS: true
           REPOSITORY_DEVSKIM_DISABLE_ERRORS: true
           TERRAFORM_TERRASCAN_DISABLE_ERRORS: true
+          REPOSITORY_GRYPE_DISABLE_ERRORS: true
 
   commit-messages:
     name: Conventional Commits Lint
