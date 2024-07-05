@@ -106,6 +106,7 @@ overrides:
     projectID: _GCP_PROJECT_ID_
   revision: "1103"
   instanceID: "wwwwxxxxyyyyzzzz"
+  contractProvider: https://apigee.googleapis.com
   #
   # For Telemetry support for Multi-Org cluster. The feature is disabled by default.
   # Enabling this flag will export the metrics from Multi-Org cluster to the

@@ -14,6 +14,7 @@ k8sCluster:
   region: "{{ overrides.k8sCluster.region }}"
 
 instanceID: "{{ overrides.instanceID }}"
+contractProvider: "{{ overrides.contractProvider}}"
 
 {% if overrides.imagePullSecrets -%}
 imagePullSecrets:
