@@ -28,18 +28,24 @@
   register: cert_manager_deployments
   ignore_errors: true
 
-- name: Install cert manager
+- name: Get the currently running version of cert-manager
+  shell: "kubectl get deployment -n cert-manager -l app.kubernetes.io/instance=cert-manager -o jsonpath='{.items[0].metadata.labels.app\\.kubernetes\\.io/version}'"
+  register: running_cert_manager_version
+  when: "cert_manager_deployments.resources | length > 0"
+
+- name: Install or upgrade cert-manager
   block:
     - name: Download cert-manager
       uri:
-        url: https://github.com/jetstack/cert-manager/releases/download/{{ cert_manager_version }}/cert-manager.yaml
+        url: "https://github.com/jetstack/cert-manager/releases/download/{{ cert_manager_version }}/cert-manager.yaml"
         dest: "{{ setup_path }}/cert-manager.yaml"
+      when: "cert_manager_deployments.resources | length == 0 or running_cert_manager_version.stdout != cert_manager_version"
 
     - name: Apply cert-manager manifest to the cluster.
       kubernetes.core.k8s:
-        state: "{{ cert_manager_status }}"
+        state: "present"
         src: "{{ setup_path }}/cert-manager.yaml"
-  when: "install_cert_manager and cert_manager_deployments.resources | length == 0"
+  when: "cert_manager_deployments.resources | length == 0 or running_cert_manager_version.stdout != cert_manager_version"
 
 - name: Wait for cert-manager to be up.
   kubernetes.core.k8s_info:
