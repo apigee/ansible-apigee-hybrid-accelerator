@@ -13,10 +13,20 @@
 # limitations under the License.
 ---
 # tasks file for cert-manager
+# tasks file for cert-manager
 - name: Certificates directory exists
   file:
     path: "{{ setup_path }}"
     state: directory
+
+- name: Check if cert-manager is installed
+  kubernetes.core.k8s_info:
+    kind: Deployment
+    namespace: cert-manager
+    label_selectors:
+      - "app.kubernetes.io/instance=cert-manager"
+  register: cert_manager_deployments
+  ignore_errors: true
 
 - name: Install cert manager
   block:
@@ -27,9 +37,9 @@
 
     - name: Apply cert-manager manifest to the cluster.
       kubernetes.core.k8s:
-        state: "{{cert_manager_status}}"
+        state: "{{ cert_manager_status }}"
         src: "{{ setup_path }}/cert-manager.yaml"
-  when: "install_cert_manager"
+  when: "install_cert_manager and cert_manager_deployments.resources | length == 0"
 
 - name: Wait for cert-manager to be up.
   kubernetes.core.k8s_info:
