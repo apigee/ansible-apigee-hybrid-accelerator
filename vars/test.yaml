@@ -106,7 +106,7 @@ overrides:
     projectID: _GCP_PROJECT_ID_
   revision: "1103"
   instanceID: "wwwwxxxxyyyyzzzz"
-  enhanceProxyLimits: true
+  enhanceProxyLimits: "true"
   contractProvider: https://apigee.googleapis.com
   #
   # For Telemetry support for Multi-Org cluster. The feature is disabled by default.
