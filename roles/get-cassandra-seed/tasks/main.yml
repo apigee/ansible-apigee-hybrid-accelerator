@@ -23,9 +23,9 @@
     kubeconfig: "{{ kubeconfig }}"
   register: cassandra_data
 
-- name: Example using fail and when together
+- name: Fail when no cassandra pods are found
   fail:
-    msg: "No Cassandra Pods  with label app=apigee-cassandra found in apigee namespace "
+    msg: "No cassandra pods  with label app=apigee-cassandra found in apigee namespace "
   when: "cassandra_data.resources| length == 0"
 
 - set_fact:

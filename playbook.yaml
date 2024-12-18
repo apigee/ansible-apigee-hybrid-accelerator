@@ -35,15 +35,14 @@
     - { role: bootstrap-apigee-crds, tags: ['bootstrap-apigee-crds'] }
     - { role: apigee-hybrid-overrides, tags: ['generate-overrides'] }
     - { role: apigee-custom-sc, vars: { storageClassName: '{{ overrides.cassandra.storage.storageClass }}', storageClassType: '{{ overrides.cassandra.storage.storageClassProperties.provisionerType }}', scParameters: '{{ overrides.cassandra.storage.storageClassProperties.parameters }}' }, tags: ['create-custom-sc'] }
-    - { role: helm-ops, vars: { release_name: 'operator', chart_ref: 'apigee-operator', release_namespace: 'apigee-system', create_namespace: true}, tags: ['ao'] }
-    - { role: wait-for-k8s-resource, vars: { k8s_api_version: v1, k8s_kind: Deployment, k8s_namespace: apigee-system, k8s_resource_name: apigee-controller-manager}, tags: ['ao', 'wait_ao'] }
+    - { role: helm-ops, vars: { release_name: 'operator', chart_ref: 'apigee-operator', release_namespace: 'apigee', create_namespace: true}, tags: ['ao'] }
+    - { role: wait-for-k8s-resource, vars: { k8s_api_version: v1, k8s_kind: Deployment, k8s_namespace: apigee, k8s_resource_name: apigee-controller-manager}, tags: ['ao', 'wait_ao'] }
     - { role: helm-ops, vars: { release_name: 'datastore', chart_ref: 'apigee-datastore'}, tags: ['ds', 'apigeeds'] }
     - { role: wait-for-k8s-resource, vars: { k8s_api_version: apps/v1, k8s_kind: StatefulSet, k8s_namespace: apigee, k8s_resource_name: apigee-cassandra-default }, tags: ['ds', 'apigeeds', 'wait_ds'] }
     - { role: helm-ops, vars: { release_name: 'telemetry', chart_ref: 'apigee-telemetry' }, tags: ['at', 'apigeetelem'] }
     - { role: wait-for-k8s-resource, vars: { k8s_api_version: apigee.cloud.google.com/v1alpha2, k8s_kind: ApigeeTelemetry, k8s_namespace: apigee, k8s_resource_name: apigee-telemetry }, tags: ['at', 'apigeetelem', 'wait_at'] }
     - { role: wait-for-k8s-resource, vars: { k8s_api_version: apps/v1, k8s_kind: ReplicaSet, k8s_namespace: apigee, k8s_resource_name: null, label_selectors: ["com.apigee.apigeedeployment=apigee-metrics-adapter-apigee-telemetry"] }, tags: ['at', 'apigeetelem', 'wait_at'] }
     - { role: wait-for-k8s-resource, vars: { k8s_api_version: apps/v1, k8s_kind: ReplicaSet, k8s_namespace: apigee, k8s_resource_name: null, label_selectors: ["com.apigee.apigeedeployment=apigee-metrics-apigee-telemetry-app"] }, tags: ['at', 'apigeetelem', 'wait_at'] }
-    - { role: wait-for-k8s-resource, vars: { k8s_api_version: apps/v1, k8s_kind: ReplicaSet, k8s_namespace: apigee, k8s_resource_name: null, label_selectors: ["com.apigee.apigeedeployment=apigee-metrics-apigee-telemetry-proxy"] }, tags: ['at', 'apigeetelem', 'wait_at'] }
     - { role: helm-ops, vars: { release_name: 'redis', chart_ref: 'apigee-redis' }, tags: ['apigeeredis'] }
     - { role: wait-for-k8s-resource, vars: { k8s_api_version: apps/v1, k8s_kind: StatefulSet, k8s_namespace: apigee, k8s_resource_name: apigee-redis-default }, tags: ['apigeeredis', 'wait_apigeeredis'] }
     - { role: helm-ops, vars: { release_name: 'ingress-manager', chart_ref: 'apigee-ingress-manager' }, tags: ['apigeeingress'] }
@@ -81,6 +80,8 @@
         custom_values: true
         set_values:
           - value: "envgroup={{ item.name }}"
+            value_type: string
+          - value: "apigeeChainingGateway.name={{ item.name }}"
             value_type: string
       loop: "{{ overrides.virtualhosts }}"
       tags: ['apigee-virtualhost']
@@ -126,15 +127,14 @@
     - { role: get-cassandra-seed, vars: { kubeconfig: "{{ kubeconfigs.primary }}" }, tags: ['cass-seed'] }
     - { role: apigee-hybrid-overrides, vars: { cassandra_seed_host: "{{ cassandra_seed_data }}"}, tags: ['generate-overrides'] }
     - { role: apigee-custom-sc, vars: { storageClassName: '{{ overrides.cassandra.storage.storageClass }}', storageClassType: '{{ overrides.cassandra.storage.storageClassProperties.provisionerType }}', scParameters: '{{ overrides.cassandra.storage.storageClassProperties.parameters }}' }, tags: ['create-custom-sc'] }
-    - { role: helm-ops, vars: { release_name: 'operator', chart_ref: 'apigee-operator', release_namespace: 'apigee-system', create_namespace: true}, tags: ['ao'] }
-    - { role: wait-for-k8s-resource, vars: { k8s_api_version: v1, k8s_kind: Deployment, k8s_namespace: apigee-system, k8s_resource_name: apigee-controller-manager}, tags: ['ao', 'wait_ao'] }
+    - { role: helm-ops, vars: { release_name: 'operator', chart_ref: 'apigee-operator', release_namespace: 'apigee', create_namespace: true}, tags: ['ao'] }
+    - { role: wait-for-k8s-resource, vars: { k8s_api_version: v1, k8s_kind: Deployment, k8s_namespace: apigee, k8s_resource_name: apigee-controller-manager}, tags: ['ao', 'wait_ao'] }
     - { role: helm-ops, vars: { release_name: 'datastore', chart_ref: 'apigee-datastore'}, tags: ['ds', 'apigeeds'] }
     - { role: wait-for-k8s-resource, vars: { k8s_api_version: apps/v1, k8s_kind: StatefulSet, k8s_namespace: apigee, k8s_resource_name: apigee-cassandra-default }, tags: ['ds', 'apigeeds', 'wait_ds'] }
     - { role: helm-ops, vars: { release_name: 'telemetry', chart_ref: 'apigee-telemetry' }, tags: ['at', 'apigeetelem'] }
     - { role: wait-for-k8s-resource, vars: { k8s_api_version: apigee.cloud.google.com/v1alpha2, k8s_kind: ApigeeTelemetry, k8s_namespace: apigee, k8s_resource_name: apigee-telemetry }, tags: ['at', 'apigeetelem', 'wait_at'] }
     - { role: wait-for-k8s-resource, vars: { k8s_api_version: apps/v1, k8s_kind: ReplicaSet, k8s_namespace: apigee, k8s_resource_name: null, label_selectors: ["com.apigee.apigeedeployment=apigee-metrics-adapter-apigee-telemetry"] }, tags: ['at', 'apigeetelem', 'wait_at'] }
     - { role: wait-for-k8s-resource, vars: { k8s_api_version: apps/v1, k8s_kind: ReplicaSet, k8s_namespace: apigee, k8s_resource_name: null, label_selectors: ["com.apigee.apigeedeployment=apigee-metrics-apigee-telemetry-app"] }, tags: ['at', 'apigeetelem', 'wait_at'] }
-    - { role: wait-for-k8s-resource, vars: { k8s_api_version: apps/v1, k8s_kind: ReplicaSet, k8s_namespace: apigee, k8s_resource_name: null, label_selectors: ["com.apigee.apigeedeployment=apigee-metrics-apigee-telemetry-proxy"] }, tags: ['at', 'apigeetelem', 'wait_at'] }
     - { role: helm-ops, vars: { release_name: 'redis', chart_ref: 'apigee-redis' }, tags: ['apigeeredis'] }
     - { role: wait-for-k8s-resource, vars: { k8s_api_version: apps/v1, k8s_kind: StatefulSet, k8s_namespace: apigee, k8s_resource_name: apigee-redis-default }, tags: ['apigeeredis', 'wait_apigeeredis'] }
     - { role: helm-ops, vars: { release_name: 'ingress-manager', chart_ref: 'apigee-ingress-manager' }, tags: ['apigeeingress'] }
@@ -171,6 +171,8 @@
         custom_values: true
         set_values:
           - value: "envgroup={{ item.name }}"
+            value_type: string
+          - value: "apigeeChainingGateway.name={{ item.name }}"
             value_type: string
       loop: "{{ overrides.virtualhosts }}"
       tags: ['apigee-virtualhost']

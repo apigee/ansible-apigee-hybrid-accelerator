@@ -1322,7 +1322,7 @@
           },
           "required": ["image", "resources", "accessLogFile", "accessLogFormat"]
         },
-        "ingressGateway": {
+        "apigeeIngressGateway": {
           "type": "object",
           "properties": {
             "image": {
@@ -1396,7 +1396,7 @@
         "ao",
         "kubeRBACProxy",
         "istiod",
-        "ingressGateway"
+        "apigeeIngressGateway"
       ]
     }
   },
