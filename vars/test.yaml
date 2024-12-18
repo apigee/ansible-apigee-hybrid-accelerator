@@ -51,7 +51,7 @@ synchronizer_prod_svc_account: apigee-synchronizer
 # refer: https://cloud.google.com/apigee/docs/hybrid/preview/helm-install#pull-apigee-helm-charts
 
 helm_chart_repo: oci://us-docker.pkg.dev/apigee-release/apigee-hybrid-helm-charts
-helm_chart_version: 1.13.2
+helm_chart_version: 1.14.0
 helm_charts:
   - apigee-operator
   - apigee-datastore
@@ -106,6 +106,7 @@ overrides:
     projectID: _GCP_PROJECT_ID_
   revision: "1103"
   instanceID: "wwwwxxxxyyyyzzzz"
+  enhanceProxyLimits: true
   contractProvider: https://apigee.googleapis.com
   #
   # For Telemetry support for Multi-Org cluster. The feature is disabled by default.
@@ -175,7 +176,7 @@ overrides:
     replicaCountMax: 2
     image:
       url: "gcr.io/apigee-release/hybrid/apigee-mart-server"
-      tag: "1.13.2"
+      tag: "1.14.0"
       pullPolicy: IfNotPresent
     resources:
       requests:
@@ -185,7 +186,7 @@ overrides:
   mintTaskScheduler:
     image:
       url: "gcr.io/apigee-release/hybrid/apigee-mint-task-scheduler"
-      tag: "1.13.2"
+      tag: "1.14.0"
       pullPolicy: IfNotPresent
     resources:
       requests:
@@ -200,7 +201,7 @@ overrides:
     serviceAccountRef: apigee-hybrid-secret
     image:
       url: "gcr.io/apigee-release/hybrid/apigee-synchronizer"
-      tag: "1.13.2"
+      tag: "1.14.0"
       pullPolicy: IfNotPresent
     resources:
       requests:
@@ -215,7 +216,7 @@ overrides:
     replicaCountMax: 4
     image:
       url: "gcr.io/apigee-release/hybrid/apigee-runtime"
-      tag: "1.13.2"
+      tag: "1.14.0"
       pullPolicy: IfNotPresent
     resources:
       requests:
@@ -230,7 +231,7 @@ overrides:
       secret: ""
       image:
         url: "gcr.io/apigee-release/hybrid/apigee-hybrid-cassandra-client"
-        tag: "1.13.2"
+        tag: "1.14.0"
         pullPolicy: IfNotPresent
     replicaCount: 3
     # multiRegionSeedHost:
@@ -243,7 +244,7 @@ overrides:
       capacity: 10Gi
     image:
       url: "gcr.io/apigee-release/hybrid/apigee-hybrid-cassandra"
-      tag: "1.13.2"
+      tag: "1.14.0"
       pullPolicy: IfNotPresent
     resources:
       requests:
@@ -256,7 +257,7 @@ overrides:
       enabled: false
       image:
         url: "gcr.io/apigee-release/hybrid/apigee-cassandra-backup-utility"
-        tag: "1.13.2"
+        tag: "1.14.0"
         pullPolicy: IfNotPresent
       serviceAccountRef: apigee-hybrid-secret
       schedule: "0 2 * * *"
@@ -266,7 +267,7 @@ overrides:
       snapshotTimestamp:
       image:
         url: "gcr.io/apigee-release/hybrid/apigee-cassandra-backup-utility"
-        tag: "1.13.2"
+        tag: "1.14.0"
         pullPolicy: IfNotPresent
       serviceAccountRef: apigee-hybrid-secret
       dbStorageBucket: ""
@@ -279,7 +280,7 @@ overrides:
     replicaCountMax: 4
     image:
       url: "gcr.io/apigee-release/hybrid/apigee-udca"
-      tag: "1.13.2"
+      tag: "1.14.0"
       pullPolicy: IfNotPresent
     resources:
       requests:
@@ -361,7 +362,7 @@ overrides:
     serviceAccountRef: apigee-hybrid-secret
     image:
       url: "gcr.io/apigee-release/hybrid/apigee-connect-agent"
-      tag: "1.13.2"
+      tag: "1.14.0"
       pullPolicy: IfNotPresent
     replicaCountMin: 1
     replicaCountMax: 1
@@ -374,7 +375,7 @@ overrides:
     serviceAccountRef: apigee-hybrid-secret
     image:
       url: "gcr.io/apigee-release/hybrid/apigee-watcher"
-      tag: "1.13.2"
+      tag: "1.14.0"
       pullPolicy: IfNotPresent
     replicaCountMin: 1
     replicaCountMax: 1
@@ -386,7 +387,7 @@ overrides:
   redis:
     image:
       url: "gcr.io/apigee-release/hybrid/apigee-redis"
-      tag: "1.13.2"
+      tag: "1.14.0"
       pullPolicy: IfNotPresent
     replicaCount: 2
     resources:
@@ -406,7 +407,7 @@ overrides:
   ao:
     image:
       url: "gcr.io/apigee-release/hybrid/apigee-operators"
-      tag: "1.13.2"
+      tag: "1.14.0"
       pullPolicy: IfNotPresent
     resources:
       limits:
@@ -418,7 +419,7 @@ overrides:
     installer:
       image:
         url: "gcr.io/apigee-release/hybrid/apigee-installer"
-        tag: "1.13.2"
+        tag: "1.14.0"
         pullPolicy: IfNotPresent
   # kube rbac proxy
   kubeRBACProxy:
@@ -443,7 +444,7 @@ overrides:
     accessLogFile: '/dev/stdout'
     accessLogFormat: '{"start_time":"%START_TIME%","remote_address":"%DOWNSTREAM_DIRECT_REMOTE_ADDRESS%","user_agent":"%REQ(USER-AGENT)%","host":"%REQ(:AUTHORITY)%","request":"%REQ(:METHOD)% %REQ(X-ENVOY-ORIGINAL-PATH?:PATH)% %PROTOCOL%","request_time":"%DURATION%","status":"%RESPONSE_CODE%","status_details":"%RESPONSE_CODE_DETAILS%","bytes_received":"%BYTES_RECEIVED%","bytes_sent":"%BYTES_SENT%","upstream_address":"%UPSTREAM_HOST%","upstream_response_flags":"%RESPONSE_FLAGS%","upstream_response_time":"%RESPONSE_DURATION%","upstream_service_time":"%RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)%","upstream_cluster":"%UPSTREAM_CLUSTER%","x_forwarded_for":"%REQ(X-FORWARDED-FOR)%","request_method":"%REQ(:METHOD)%","request_path":"%REQ(X-ENVOY-ORIGINAL-PATH?:PATH)%","request_protocol":"%PROTOCOL%","tls_protocol":"%DOWNSTREAM_TLS_VERSION%","request_id":"%REQ(X-REQUEST-ID)%","sni_host":"%REQUESTED_SERVER_NAME%","apigee_dynamic_data":"%DYNAMIC_METADATA(envoy.lua)%"}'
   # Apigee Ingressgateway.
-  ingressGateway:
+  apigeeIngressGateway:
     image:
       url: "gcr.io/apigee-release/hybrid/apigee-asm-ingress"
       tag: "1.18.7-asm.4-distroless"
