@@ -194,6 +194,30 @@ To use custom storage classes for cassandra statefulsets, you can populate the `
 - anthos-vsphere-csi
 *Note: If you face any issues with any of the provisioners, please create a github issue in this repository*
 
+#### To update cert-manager
+
+To update cert-manager, follow these steps:
+
+1. Specify the version in the vars.yaml file:
+    Modify the cert_manager_version variable in the vars/vars.yaml file to the desired version. For example:
+```
+cert_manager_version: v1.14.0
+```
+
+Run the Ansible playbook:
+Execute the Ansible playbook which includes the logic to check the current version of cert-manager, compare it with the specified version, and update if necessary.
+```
+ansible-playbook playbook.yaml -e @vars/vars.yaml --tags "cert-manager"
+```
+The playbook will:
+
+- Check the currently installed version of cert-manager.
+- Compare it with the version specified in the vars.yaml file.
+- If the versions differ, the playbook will download and apply the new cert-manager manifest.
+- If the versions are the same and cert-manager is running, no action will be taken.
+- If cert-manager is not installed, the playbook will install it using the specified version.
+
+
 ## Limitations
 * Refer [link](https://cloud.google.com/apigee/docs/hybrid/preview/helm-install#limitations)
 
