@@ -25,7 +25,7 @@ module "gke" {
   subnetwork                 = var.subnetwork
   ip_range_pods              = var.ip_range_pods
   ip_range_services          = var.ip_range_services
-  http_load_balancing        = false
+  http_load_balancing        = true
   network_policy             = false
   horizontal_pod_autoscaling = true
   filestore_csi_driver       = false
