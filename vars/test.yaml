@@ -254,19 +254,19 @@ overrides:
     heapNewSize: 100M
     # datacenter: "dc-1"
     backup:
-      enabled: false
+      enabled: true
       image:
-        url: "gcr.io/apigee-release/hybrid/apigee-cassandra-backup-utility"
+        url: "gcr.io/apigee-release/hybrid/apigee-hybrid-cassandra-client"
         tag: "1.15.0"
         pullPolicy: IfNotPresent
       serviceAccountRef: apigee-hybrid-secret
       schedule: "0 2 * * *"
-      dbStorageBucket:
+      cloudProvider: "CSI"
     restore:
       enabled: false
       snapshotTimestamp:
       image:
-        url: "gcr.io/apigee-release/hybrid/apigee-cassandra-backup-utility"
+        url: "gcr.io/apigee-release/hybrid/apigee-hybrid-cassandra-client"
         tag: "1.15.0"
         pullPolicy: IfNotPresent
       serviceAccountRef: apigee-hybrid-secret

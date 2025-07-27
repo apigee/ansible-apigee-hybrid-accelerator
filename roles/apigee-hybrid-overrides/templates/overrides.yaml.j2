@@ -146,13 +146,19 @@ cassandra:
   {{ container_image(overrides.cassandra.image.url,overrides.cassandra.image.tag,overrides.cassandra.image.pullPolicy,) | indent( width=2)}}
   backup:
     enabled: {{ overrides.cassandra.backup.enabled }}
+    cloudProvider: {{ overrides.cassandra.backup.cloudProvider }}
+    {% if overrides.cassandra.backup.dbStorageBucket|default('',true) != '' -%}
     dbStorageBucket: {{ overrides.cassandra.backup.dbStorageBucket }}
+    {%- endif %}
     serviceAccountRef: {{ svc_account(create_service_account, deployment_environment,'cassandra', overrides.cassandra.backup.serviceAccountRef) | indent( width=4)}}
     schedule: {{ overrides.cassandra.backup.schedule }}
     {{ container_image(overrides.cassandra.backup.image.url,overrides.cassandra.backup.image.tag,overrides.cassandra.backup.image.pullPolicy,) | indent( width=4)}}
   restore:
     enabled: {{ overrides.cassandra.restore.enabled }}
+    cloudProvider: {{ overrides.cassandra.restore.cloudProvider }}
+    {% if overrides.cassandra.restore.dbStorageBucket|default('',true) != '' -%}
     dbStorageBucket: {{ overrides.cassandra.restore.dbStorageBucket }}
+    {%- endif %}
     serviceAccountRef: {{ svc_account(create_service_account, deployment_environment,'cassandra', overrides.cassandra.restore.serviceAccountRef) | indent( width=4)}}
     snapshotTimestamp: {{ overrides.cassandra.restore.snapshotTimestamp }}
     {{ container_image(overrides.cassandra.restore.image.url,overrides.cassandra.restore.image.tag,overrides.cassandra.restore.image.pullPolicy,) | indent( width=4)}}
