@@ -79,10 +79,8 @@ def can_deploy_statefulset(storage_class_name):
     if vct.metadata.annotations is not None:
         # deprecated annotation
         # https://kubernetes.io/docs/concepts/storage/persistent-volumes/#class
-        if ("volume.beta.kubernetes.io/storage-class"
-            in vct.metadata.annotations):
-            storage_class = \
-                vct.metadata.annotations["volume.beta.kubernetes.io/storage-class"]
+        if "volume.beta.kubernetes.io/storage-class" in vct.metadata.annotations:  # noqa
+            storage_class = vct.metadata.annotations["volume.beta.kubernetes.io/storage-class"]  # noqa
     else:
         # Fallback to spec.storage_class_name
         storage_class = vct.spec.storage_class_name
