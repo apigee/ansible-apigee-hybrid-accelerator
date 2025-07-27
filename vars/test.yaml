@@ -85,7 +85,7 @@ validate_api_redeploy: false
 
 disable_hooks:
   operator: false
-  datastore: true
+  datastore: false
   organization: false
   environment: false
   virtualhosts: false
