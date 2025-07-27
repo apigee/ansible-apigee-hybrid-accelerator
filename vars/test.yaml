@@ -262,7 +262,7 @@ overrides:
       serviceAccountRef: apigee-hybrid-secret
       schedule: "0 2 * * *"
       cloudProvider: "CSI"
-      dbStorageBucket: ""
+      dbStorageBucket: "unused"
     restore:
       enabled: false
       snapshotTimestamp:
@@ -271,7 +271,7 @@ overrides:
         tag: "1.15.0"
         pullPolicy: IfNotPresent
       serviceAccountRef: apigee-hybrid-secret
-      dbStorageBucket: ""
+      dbStorageBucket: "unused"
       cloudProvider: "CSI"
   #
   # Apigee UDCA.
