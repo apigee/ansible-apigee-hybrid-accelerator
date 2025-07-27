@@ -76,15 +76,19 @@ def can_deploy_statefulset(storage_class_name):
     if len(claims) > 1:
         raise Exception("statefulset contains more than one volume claim")
     vct = claims[0]
-    if not vct.metadata.annotations:
-        return False
-    if "volume.beta.kubernetes.io/storage-class" not in \
-            vct.metadata.annotations:
-        return False
-    storage_class = \
-        vct.metadata.annotations["volume.beta.kubernetes.io/storage-class"]
+    if vct.metadata.annotations is not None:
+        # deprecated annotation
+        # https://kubernetes.io/docs/concepts/storage/persistent-volumes/#class
+        if ("volume.beta.kubernetes.io/storage-class"
+            in vct.metadata.annotations):
+            storage_class = \
+                vct.metadata.annotations["volume.beta.kubernetes.io/storage-class"]
+    else:
+        # Fallback to spec.storage_class_name
+        storage_class = vct.spec.storage_class_name
     if storage_class_name != storage_class:
         return False
+    print(f"Storage class matches existing: {storage_class_name}")
     return True
 
 
