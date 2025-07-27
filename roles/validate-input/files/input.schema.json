@@ -577,6 +577,9 @@
                 "serviceAccountRef": {
                   "type": "string"
                 },
+                "cloudProvider": {
+                  "type": ["string", "null"]
+                },
                 "schedule": {
                   "type": "string"
                 },
@@ -589,7 +592,7 @@
                 "image",
                 "serviceAccountRef",
                 "schedule",
-                "dbStorageBucket"
+                "cloudProvider"
               ]
             },
             "restore": {
@@ -621,6 +624,9 @@
                 },
                 "dbStorageBucket": {
                   "type": "string"
+                },
+                "cloudProvider": {
+                  "type": ["string", "null"]
                 }
               },
               "required": [
@@ -628,7 +634,7 @@
                 "snapshotTimestamp",
                 "image",
                 "serviceAccountRef",
-                "dbStorageBucket"
+                "cloudProvider"
               ]
             }
           },
