@@ -20,3 +20,4 @@ set_values: []
 release_namespace: apigee
 create_namespace: false
 release_state: present
+disable_hook: false

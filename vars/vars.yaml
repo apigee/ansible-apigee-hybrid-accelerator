@@ -81,6 +81,21 @@ validate_api_redeploy: false
 
 ################################################Post Setup Validation Details ################################################
 
+################################################ Manage Hybrid Helm Hooks ################################################
+
+disable_hooks:
+  operator: false
+  datastore: false
+  organization: false
+  environment: false
+  virtualhosts: false
+  redis: false
+  ingress_manager: false
+  telemetry: false
+
+################################################ Manage Hybrid Helm Hooks ################################################
+
+
 ################################################Apigee Hybrid Helm Values ################################################
 
 ## To fill this section refer the https://cloud.google.com/apigee/docs/hybrid/v1.10/config-prop-ref
