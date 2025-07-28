@@ -13,6 +13,7 @@ RUN apk add --update --no-cache py-pip==23.1.2-r0 && \
         ansible-core==2.15.5 \
         ansible==8.5.0 && \
     ansible-galaxy collection install ansible.posix && \
+    ansible-galaxy collection install ansible.utils && \
     case $(uname -m) in \
         x86_64) ARCH=amd64; ;; \
         armv7l) ARCH=arm; ;; \

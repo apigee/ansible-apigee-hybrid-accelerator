@@ -1,0 +1,7 @@
+---
+# defaults file for apigee-known-issues
+setup_path: "~"
+enable_workarounds:
+  - 416634326_delete_crd
+  - 416634326_update_role
+  - 416634326_rollout_restart

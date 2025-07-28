@@ -1,0 +1,18 @@
+---
+# tasks file for apigee-known-issues
+# https://cloud.google.com/apigee/docs/release/known-issues
+
+- ansible.builtin.debug:
+    msg: Run apigee hybrid workarounds for known-issues
+
+- name: Catch workaround issues
+  block:
+    - name: Run apigee hybrid workarounds for known-issues
+      ansible.builtin.include_tasks:
+        file: "{{ item }}.yaml"
+      loop: "{{ enable_workarounds }}"
+
+  rescue:
+    - name: Handle the failure
+      ansible.builtin.debug:
+        msg: "Caught error applying workaround"

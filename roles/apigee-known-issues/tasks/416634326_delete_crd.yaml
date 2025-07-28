@@ -1,0 +1,29 @@
+---
+# tasks file for https://cloud.google.com/apigee/docs/release/known-issues#416634326
+
+- name: kubectl get crds
+  shell: >
+    kubectl get crd -o custom-columns=NAME:metadata.name
+  register: crds
+
+- set_fact:
+    istio_crds: "{{ crds.stdout_lines | select('match', '.*istio.io') | list }}"
+
+- name: Print the istio_crds
+  ansible.builtin.debug:
+    msg: "{{istio_crds}}"
+
+- name: Backup istio crd names
+  copy:
+    content: "{{ istio_crds }}"
+    dest: "{{ setup_path }}/416634326_crd.yaml"
+
+- name: Delete old istio crds
+  shell: >
+    kubectl delete crd {{ item }}
+  loop: "{{istio_crds}}"
+  register: crds_deletion
+
+- name: Print the crd deletion info
+  ansible.builtin.debug:
+    msg: "{{crds_deletion}}"

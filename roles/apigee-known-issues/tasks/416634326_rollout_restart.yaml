@@ -1,0 +1,33 @@
+---
+# tasks file for https://cloud.google.com/apigee/docs/release/known-issues#416634326
+- name: kubectl get apigee-ingressgateway-manager deployment
+  shell: >
+    kubectl get deployments -n apigee -l app=apigee-ingressgateway-manager -o name
+  register: ingress_manager
+
+- name: Print updated clusterrole dry-run
+  ansible.builtin.debug:
+    msg: "{{ingress_manager}}"
+
+- name: check if deployment exists
+  ansible.builtin.fail:
+    msg: " No deployments matching lable app=apigee-ingressgateway-manager found in apigee ns"
+  when: ingress_manager.stdout_lines | length == 0
+
+- name: kubectl rollout restart apigee-ingressgateway-manager deployment
+  shell: >
+    kubectl rollout restart deployment -n apigee -l app=apigee-ingressgateway-manager
+  register: ingress_manager_restart
+
+- name: print rollout restart apigee-ingressgateway-manager deployment
+  ansible.builtin.debug:
+    msg: "{{ingress_manager_restart}}"
+
+- name: kubectl wait for rollout apigee-ingressgateway-manager deployment
+  shell: >
+    kubectl rollout status -n apigee {{ ingress_manager.stdout }}
+  register: ingress_manager_wait
+
+- name: print rollout restart apigee-ingressgateway-manager deployment
+  ansible.builtin.debug:
+    msg: "{{ingress_manager_wait}}"
