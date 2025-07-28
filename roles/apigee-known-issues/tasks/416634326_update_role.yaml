@@ -7,7 +7,7 @@
 
 - name: declare missing permissions
   set_fact:
-    missing_permissions:
+    permissions_yaml: >
       - apiGroups:
         - gateway.networking.k8s.io
         resources:
@@ -58,6 +58,10 @@
         - get
         - list
         - watch
+
+- name: Parse the YAML content and set as fact
+  ansible.builtin.set_fact:
+    missing_permissions: "{{ permissions_yaml| from_yaml }}"
 
 - name: Slurp the original 416634326_clusterrole_original
   ansible.builtin.slurp:
