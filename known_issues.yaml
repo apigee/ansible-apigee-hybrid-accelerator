@@ -11,10 +11,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 ---
-# defaults file for apigee-known-issues
-setup_path: "~"
-enable_fixes:
-  - 416634326_delete_crd
-  - 416634326_update_role
-  - 416634326_rollout_restart
+- name: Run known-issues fixes
+  hosts: all
+  environment:
+    USE_GKE_GCLOUD_AUTH_PLUGIN: "true"
+    HELM_EXPERIMENTAL_OCI: "1"
+  vars:
+    setup_path: "/tmp"
+  roles:
+    # https://cloud.google.com/apigee/docs/release/known-issues#416634326
+    - role: apigee-known-issues
+      vars:
+        enable_fixes:
+          - 416634326_delete_crd
+          - 416634326_update_role
+          - 416634326_rollout_restart
+      tags: ['416634326']
