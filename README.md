@@ -194,6 +194,20 @@ To use custom storage classes for cassandra statefulsets, you can populate the `
 - anthos-vsphere-csi
 *Note: If you face any issues with any of the provisioners, please create a github issue in this repository*
 
+
+#### Running Known Issue fixes.
+> Note: In case of multi-dc , this needs to be run against each DC.
+> Ensure the relevant kubernetes context is configured.
+
+To run the fixes for known issues.
+```
+ansible-playbook known_issues.yaml
+```
+
+
+> Note: Currently fix for following issues are supported.
+> * https://cloud.google.com/apigee/docs/release/known-issues#416634326
+
 ## Limitations
 * Refer [link](https://cloud.google.com/apigee/docs/hybrid/preview/helm-install#limitations)
 

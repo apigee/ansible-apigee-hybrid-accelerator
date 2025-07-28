@@ -3,9 +3,13 @@ on:
   push:
     paths-ignore:
       - '**.md'
+      - roles/apigee-known-issues
+      - known_issues.yaml
   pull_request:
     paths-ignore:
       - '**.md'
+      - roles/apigee-known-issues
+      - known_issues.yaml
     branches:
       - main
   workflow_dispatch:

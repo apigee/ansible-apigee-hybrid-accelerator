@@ -1,0 +1,134 @@
+# Copyright 2023 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+---
+# tasks file for https://cloud.google.com/apigee/docs/release/known-issues#416634326
+- name: kubectl get cluster-role
+  shell: >
+    kubectl get clusterrole apigee-ingressgateway-manager-apigee -o yaml > {{ setup_path }}/416634326_clusterrole_original.yaml
+  register: ingress_clusterrole
+
+- name: declare missing permissions
+  set_fact:
+    permissions_yaml: >
+      - apiGroups:
+        - gateway.networking.k8s.io
+        resources:
+        - gatewayclasses
+        verbs:
+        - get
+        - list
+        - watch
+      - apiGroups:
+        - networking.istio.io
+        resources:
+        - sidecars
+        - destinationrules
+        - gateways
+        - virtualservices
+        - envoyfilters
+        - workloadentries
+        - serviceentries
+        - workloadgroups
+        - proxyconfigs
+        verbs:
+        - get
+        - list
+        - watch
+      - apiGroups:
+        - security.istio.io
+        resources:
+        - peerauthentications
+        - authorizationpolicies
+        - requestauthentications
+        verbs:
+        - get
+        - list
+        - watch
+      - apiGroups:
+        - telemetry.istio.io
+        resources:
+        - telemetries
+        verbs:
+        - get
+        - list
+        - watch
+      - apiGroups:
+        - extensions.istio.io
+        resources:
+        - wasmplugins
+        verbs:
+        - get
+        - list
+        - watch
+
+- name: Parse the YAML content and set as fact
+  ansible.builtin.set_fact:
+    missing_permissions: "{{ permissions_yaml| from_yaml }}"
+
+- name: Slurp the original 416634326_clusterrole_original
+  ansible.builtin.slurp:
+    src: "{{ setup_path }}/416634326_clusterrole_original.yaml"
+  register: clusterrole_file_content
+
+- name: Parse the YAML content and set as fact
+  ansible.builtin.set_fact:
+    cluster_role_yaml_old: "{{ clusterrole_file_content.content | b64decode | from_yaml }}"
+
+- name: Print the old clusterrole content
+  ansible.builtin.debug:
+    msg: "{{cluster_role_yaml_old}}"
+
+- name: build updated permissions
+  ansible.builtin.set_fact:
+    updated_permissions: "{{ cluster_role_yaml_old.rules +  missing_permissions }}"
+
+- name: remove old rules
+  ansible.builtin.set_fact:
+    updated_cluster_role: "{{ cluster_role_yaml_old | ansible.utils.remove_keys(target=['rules']) }}"
+
+- name: Print cluster_role_yaml_old
+  ansible.builtin.debug:
+    msg: "{{updated_cluster_role}}"
+
+- name: build updated clusterrole yaml
+  ansible.builtin.set_fact:
+    cluster_role_yaml_new: "{{ updated_cluster_role | combine({'rules': updated_permissions })}}"
+
+- name: Print cluster_role_yaml_new
+  ansible.builtin.debug:
+    msg: "{{cluster_role_yaml_new}}"
+
+- name: Update clusterrole {{ setup_path }}/416634326_clusterrole_updated.yaml
+  copy:
+    content: "{{cluster_role_yaml_new | to_yaml}}"
+    dest: "{{ setup_path }}/416634326_clusterrole_updated.yaml"
+
+- name: kubectl apply updated clusterrole dry-run
+  shell: >
+    kubectl apply -f {{ setup_path }}/416634326_clusterrole_updated.yaml --dry-run=server
+  register: ingress_clusterrole_apply_dryrun
+
+- name: Print updated clusterrole dry-run
+  ansible.builtin.debug:
+    msg: "{{ingress_clusterrole_apply_dryrun}}"
+
+- name: kubectl apply updated clusterrole
+  shell: >
+    kubectl apply -f {{ setup_path }}/416634326_clusterrole_updated.yaml
+  register: ingress_clusterrole_apply
+
+- name: Print updated clusterrole apply
+  ansible.builtin.debug:
+    msg: "{{ingress_clusterrole_apply}}"
