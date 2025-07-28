@@ -29,6 +29,7 @@
     values_files:
       - "{{ setup_path }}/overrides_{{ cassandra_dc }}.yaml"
     # set_values: "{{ set_values }}"
+    disable_hook: "{{ disable_hook }}"
   when: "not custom_values"
 
 - name: Deploy {{ chart_ref }} with custom_values

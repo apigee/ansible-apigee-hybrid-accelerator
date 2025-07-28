@@ -81,6 +81,20 @@ validate_api_redeploy: false
 
 ################################################Post Setup Validation Details ################################################
 
+################################################ Manage Hybrid Helm Hooks ################################################
+
+disable_hooks:
+  operator: false
+  datastore: false
+  organization: false
+  environment: false
+  virtualhosts: false
+  redis: false
+  ingress_manager: false
+  telemetry: false
+
+################################################ Manage Hybrid Helm Hooks ################################################
+
 ################################################Apigee Hybrid Helm Values ################################################
 
 ## To fill this section refer the https://cloud.google.com/apigee/docs/hybrid/v1.10/config-prop-ref
@@ -254,23 +268,23 @@ overrides:
     heapNewSize: 100M
     # datacenter: "dc-1"
     backup:
-      enabled: false
+      enabled: true
       image:
-        url: "gcr.io/apigee-release/hybrid/apigee-cassandra-backup-utility"
+        url: "gcr.io/apigee-release/hybrid/apigee-hybrid-cassandra-client"
         tag: "1.15.0"
         pullPolicy: IfNotPresent
       serviceAccountRef: apigee-hybrid-secret
       schedule: "0 2 * * *"
-      dbStorageBucket:
+      cloudProvider: "CSI"
     restore:
       enabled: false
       snapshotTimestamp:
       image:
-        url: "gcr.io/apigee-release/hybrid/apigee-cassandra-backup-utility"
+        url: "gcr.io/apigee-release/hybrid/apigee-hybrid-cassandra-client"
         tag: "1.15.0"
         pullPolicy: IfNotPresent
       serviceAccountRef: apigee-hybrid-secret
-      dbStorageBucket: ""
+      cloudProvider: "CSI"
   #
   # Apigee UDCA.
   #
