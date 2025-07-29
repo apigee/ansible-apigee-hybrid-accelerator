@@ -1,6 +1,6 @@
 FROM google/cloud-sdk:458.0.0-alpine
 ENV HELM_BASE_URL="https://get.helm.sh"
-ENV HELM_VERSION="3.13.1"
+ENV HELM_VERSION="3.14.2"
 SHELL ["/bin/ash", "-eo", "pipefail", "-c"]
 RUN apk add --update --no-cache py-pip==23.1.2-r0 && \
     python3 -m pip install --no-cache-dir \

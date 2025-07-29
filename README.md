@@ -39,11 +39,13 @@ You can follow manual steps  to install the below packages
         ansible-core==2.15.5 \
         ansible==8.5.0
    ```
-- `helm >3.10`  refer https://helm.sh/docs/intro/install/
+- `helm >3.14.2`  refer https://helm.sh/docs/intro/install/
+    > Note: The version of helm keeps changing as apigee hybrid versions keep getting updated.
+    > Refer the official [documentation](https://cloud.google.com/apigee/docs/hybrid/supported-platforms) for the right  helm version to be used.
 - `gcloud cli`   refer https://cloud.google.com/sdk/docs/install
 - `kubectl`  refer https://cloud.google.com/sdk/docs/components#installing_components
 
-To continue to install follow the [steps](#configure-ansible-variables)
+    To continue to install follow the [steps](#configure-ansible-variables)
 
 OR
 
