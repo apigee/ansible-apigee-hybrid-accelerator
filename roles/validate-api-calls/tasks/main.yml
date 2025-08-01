@@ -118,12 +118,12 @@
     kind: Service
     namespace: apigee
     label_selectors:
-      - ingress_name=ingress
+      - ingress_name={{apigee_env_group_selector}}
   register: ingress_data
 
 - name: Example using fail and when together
   fail:
-    msg: "No services with label ingress_name=ingress found in apigee namespace "
+    msg: "No services with label ingress_name={{apigee_env_group_selector}} found in apigee namespace "
   when: "ingress_data.resources| length == 0"
 
 - name: Set Env Group host
