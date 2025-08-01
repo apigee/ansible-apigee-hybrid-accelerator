@@ -35,9 +35,11 @@ nodeSelector:
     value: "{{ overrides.nodeSelector.apigeeData.value|default('data') }}"
 {%- endif %}
 
-# This configuration is introduced in hybrid v1.8
-{% for ing_gw in overrides.ingressGateways|default([]) -%}
+
+{% if overrides.ingressGateways|default([])|length > 0 %}
 ingressGateways:
+{% endif %}
+{% for ing_gw in overrides.ingressGateways|default([]) -%}
 - name: {{ ing_gw.name }} # maximum 17 characters. See Known issue 243167389.
   replicaCountMin: {{ ing_gw.replicaCountMin|default('2') }}
   replicaCountMax: {{ ing_gw.replicaCountMax|default('10') }}
@@ -66,7 +68,7 @@ virtualhosts:
 {% if vhost_data.get('selector') -%}
 {% for k_s,v_s in vhost_data.get('selector').items() -%}
 
-{% set ing_gw_name = overrides.ingressGateways | map(attribute='name') | list %}
+{% set ing_gw_name = overrides.ingressGateways|default([]) | map(attribute='name') | list %}
 {% if k_s == 'ingress_name' -%}
 {% if v_s in ing_gw_name %}
 {{ '  ' }}{{ k_s }}: {{ v_s }}

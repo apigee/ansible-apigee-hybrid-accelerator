@@ -163,10 +163,10 @@ overrides:
   orgScopedUDCA: true
 
   ingressGateways:
-  - name: test1
-    replicaCountMin: 4
-  - name: test2
-    replicaCountMin: 4
+    - name: test1
+      replicaCountMin: 4
+    - name: test2
+      replicaCountMin: 4
 
   virtualhosts:
     - name: test1
