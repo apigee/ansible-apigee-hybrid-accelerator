@@ -36,10 +36,20 @@ nodeSelector:
 {%- endif %}
 
 # This configuration is introduced in hybrid v1.8
+{% for ing_gw in overrides.ingressGateways|default([]) -%}
 ingressGateways:
-- name: ingress # maximum 17 characters. See Known issue 243167389.
-  replicaCountMin: 2
-  replicaCountMax: 10
+- name: {{ ing_gw.name }} # maximum 17 characters. See Known issue 243167389.
+  replicaCountMin: {{ ing_gw.replicaCountMin|default('2') }}
+  replicaCountMax: {{ ing_gw.replicaCountMax|default('10') }}
+  resources:
+    limits:
+      cpu: {{ ing_gw.resources.limits.cpu|default('2000m') }}
+      memory: {{ ing_gw.resources.limits.memory|default('1Gi') }}
+    requests:
+      cpu: {{ ing_gw.resources.requests.cpu|default('300m') }}
+      memory: {{ ing_gw.resources.requests.memory|default('128Mi') }}
+{% endfor %}
+
 
 virtualhosts:
 {% for vhost_data in overrides.virtualhosts -%}
@@ -55,7 +65,16 @@ virtualhosts:
 {% macro virtualhosts_selector() %}
 {% if vhost_data.get('selector') -%}
 {% for k_s,v_s in vhost_data.get('selector').items() -%}
+
+{% set ing_gw_name = overrides.ingressGateways | map(attribute='name') | list %}
+{% if k_s == 'ingress_name' -%}
+{% if v_s in ing_gw_name %}
 {{ '  ' }}{{ k_s }}: {{ v_s }}
+{% else %}
+  app: apigee-ingressgateway
+{% endif %}
+{% endif %}
+
 {% endfor %}
 {% else %}
   app: apigee-ingressgateway

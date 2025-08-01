@@ -162,16 +162,26 @@ overrides:
   # Enables org scoped UDCA deployment rather than the per-environment UDCA deployment model
   orgScopedUDCA: true
 
+  ingressGateways:
+  - name: test1
+    replicaCountMin: 4
+  - name: test2
+    replicaCountMin: 4
+
   virtualhosts:
     - name: test1
       sslSecret: apigee1-tls-secret
       hostnames:
         - test1.api.example.com
+      selector:
+        ingress_name: test1
 
     - name: test2
       sslSecret: apigee2-tls-secret
       hostnames:
         - test2.api.example.com
+      selector:
+        ingress_name: test2
 
   envs:
     - name: test1
