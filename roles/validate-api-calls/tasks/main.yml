@@ -42,7 +42,11 @@
 - name: set apigee_env_group
   set_fact:
     apigee_env_group: "{{ overrides.virtualhosts[0].name }}"
+    apigee_env_group_selector: "{{ overrides.virtualhosts[0].selector.ingress_name | default('ingress') }}"
   failed_when: overrides.virtualhosts|length == 0
+
+- debug:
+    msg: "Selected env: {{apigee_env_group}} selector: {{apigee_env_group_selector}}"
 
 - name: Get Env Group attachments
   uri:
@@ -103,7 +107,7 @@
   set_fact:
     apigee_envgroup_host: "{{ envgroup_details.json['hostnames'][0] }}"
 
-- shell: if [[ $(kubectl get services -n apigee -l ingress_name=ingress -o jsonpath='{.items[0].status.loadBalancer.ingress[0]}') ]]; then exit 0; else exit 1; fi;
+- shell: if [[ $(kubectl get services -n apigee -l ingress_name={{apigee_env_group_selector}} -o jsonpath='{.items[0].status.loadBalancer.ingress[0]}') ]]; then exit 0; else exit 1; fi;
   register: wait_for_ext_ip
   until: wait_for_ext_ip.rc == 0
   retries: 10

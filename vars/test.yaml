@@ -164,9 +164,9 @@ overrides:
 
   ingressGateways:
     - name: test1
-      replicaCountMin: 4
+      replicaCountMin: 2
     - name: test2
-      replicaCountMin: 4
+      replicaCountMin: 2
 
   virtualhosts:
     - name: test1
