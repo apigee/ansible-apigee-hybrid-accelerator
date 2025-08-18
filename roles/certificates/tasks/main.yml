@@ -97,7 +97,7 @@
         j_query: "[?item.name=='{{ item.name }}'].content"
   when: "generate_certificates"
 
-- name: Clone SSL Certificate and Secrets
+- name: Validate SSL Certificate and Secrets
   block:
     - name: Create apigee namespace
       kubernetes.core.k8s:
@@ -111,7 +111,7 @@
     - name: Search for ServiceAccounts
       kubernetes.core.k8s_info:
         kind: Secret
-        namespace: apigee
+        namespace: "{{tls_namespace}}"
         name: "{{ item.sslSecret if item.sslSecret else item.name+\"-ssl-secret\" }}"
         kubeconfig: "{{ kubeconfig }}"
       loop: "{{ overrides.virtualhosts }}"
