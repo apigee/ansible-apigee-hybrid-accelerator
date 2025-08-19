@@ -16,3 +16,5 @@
 deployment_environment: prod
 synchronizer_prod_svc_account: apigee-synchronizer
 synchronizer_non_prod_svc_account: apigee-non-prod
+runtime_prod_svc_account: apigee-runtime
+runtime_non_prod_svc_account: apigee-non-prod
