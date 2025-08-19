@@ -17,19 +17,24 @@
   shell: gcloud auth print-access-token
   register: access_token
 
-- name: Get Synchronizer Status
+- name: Get controlPlaneAccess Status
   ansible.builtin.uri:
-    url: "https://apigee.googleapis.com/v1/organizations/{{ overrides.gcp.projectID }}:getSyncAuthorization"
-    method: POST
+    url: "{{ overrides.contractProvider | default('https://apigee.googleapis.com') }}/v1/organizations/{{ overrides.gcp.projectID }}/controlPlaneAccess"
+    method: GET
     return_content: true
     headers:
       Content-Type: application/json
       Authorization: Bearer {{ access_token.stdout }}
-  register: synchronizer_status
+  register: cp_status
 
-- name: Check Synchronizer Status
+- name: Debug controlPlaneAccess Status
+  debug:
+    msg: "{{ cp_status }}"
+
+- name: Get controlPlaneAccess Info
   set_fact:
-    sync_identity: "{{ (synchronizer_status.json.identities[0] if ('identities' in synchronizer_status.json) else 'serviceAccount:') | split(':') }}"
+    sync_identity: "{{ (cp_status.json.synchronizerIdentities[0] if ('synchronizerIdentities' in cp_status.json) else 'serviceAccount:') | split(':') }}"
+    analytics_identity: "{{ (cp_status.json.analyticsPublisherIdentities[0] if ('analyticsPublisherIdentities' in cp_status.json) else 'serviceAccount:') | split(':') }}"
 
 - name: Get Synchronizer Service Account
   set_fact:
@@ -37,15 +42,15 @@
 
 - name: Enable Synchronizer
   ansible.builtin.uri:
-    url: "https://apigee.googleapis.com/v1/organizations/{{ overrides.gcp.projectID }}:setSyncAuthorization"
-    method: POST
+    url: "{{ overrides.contractProvider | default('https://apigee.googleapis.com') }}/v1/organizations/{{ overrides.gcp.projectID }}/controlPlaneAccess?update_mask=synchronizer_identities"
+    method: PATCH
     body_format: json
     status_code: [200, 201]
     return_content: true
     headers:
       Content-Type: application/json
       Authorization: Bearer {{ access_token.stdout }}
-    body: "{\"identities\":[ \"serviceAccount:{{ synchronizer_service_account }}\"]}"
+    body: "{\"synchronizer_identities\":[ \"serviceAccount:{{ synchronizer_service_account }}\"]}"
   register: synchronizer_register
   when: "sync_identity.1 != synchronizer_service_account"
 
@@ -53,3 +58,26 @@
   debug:
     msg: "{{ synchronizer_register }}"
   when: "sync_identity.1 != synchronizer_service_account"
+
+- name: Get Runtime Service Account
+  set_fact:
+    runtime_service_account: "{{ runtime_prod_svc_account if (deployment_environment == 'prod') else runtime_non_prod_svc_account }}@{{ overrides.gcp.projectID }}.iam.gserviceaccount.com"
+
+- name: Enable Analytics
+  ansible.builtin.uri:
+    url: "{{ overrides.contractProvider | default('https://apigee.googleapis.com') }}/v1/organizations/{{ overrides.gcp.projectID }}/controlPlaneAccess?update_mask=analytics_publisher_identities"
+    method: PATCH
+    body_format: json
+    status_code: [200, 201]
+    return_content: true
+    headers:
+      Content-Type: application/json
+      Authorization: Bearer {{ access_token.stdout }}
+    body: "{\"analytics_publisher_identities\":[ \"serviceAccount:{{ runtime_service_account }}\"]}"
+  register: analytics_register
+  when: "analytics_identity.1 != runtime_service_account"
+
+- name: Check Analytics Status
+  debug:
+    msg: "{{ analytics_register }}"
+  when: "analytics_identity.1 != runtime_service_account"
