@@ -53,4 +53,21 @@ module "gke" {
   node_pools_taints   = {}
   node_pools_tags     = var.node_pools_tags
   monitoring_enable_managed_prometheus = true
+  monitoring_enabled_components = [
+        "SYSTEM_COMPONENTS",
+        "APISERVER",
+        "SCHEDULER",
+        "CONTROLLER_MANAGER",
+        "STORAGE",
+        "HPA",
+        "POD",
+        "DAEMONSET",
+        "DEPLOYMENT",
+        "STATEFULSET",
+        "WORKLOADS",
+        "KUBELET",
+        "CADVISOR",
+        "DCGM",
+        "JOBSET"
+      ]
 }
