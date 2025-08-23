@@ -52,4 +52,5 @@ module "gke" {
   node_pools_metadata = {}
   node_pools_taints   = {}
   node_pools_tags     = var.node_pools_tags
+  monitoring_enable_managed_prometheus = true
 }
