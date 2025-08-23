@@ -64,7 +64,6 @@ module "gke" {
         "DAEMONSET",
         "DEPLOYMENT",
         "STATEFULSET",
-        "WORKLOADS",
         "KUBELET",
         "CADVISOR",
         "DCGM",
