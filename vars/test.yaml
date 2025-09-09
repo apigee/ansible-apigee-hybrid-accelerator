@@ -189,8 +189,8 @@ overrides:
         replicaCountMin: 1
         replicaCountMax: 4
       runtime:
-        replicaCountMin: 20
-        replicaCountMax: 25
+        replicaCountMin: 2
+        replicaCountMax: 3
 
     - name: test2
 
