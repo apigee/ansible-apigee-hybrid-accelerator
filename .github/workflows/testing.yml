@@ -28,7 +28,7 @@ jobs:
     steps:
       - id: checkout
         name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - id: commit
         uses: prompt/actions-commit-hash@v3
@@ -69,7 +69,7 @@ jobs:
     steps:
       - id: checkout
         name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - id: auth
         name: Authenticate with Google Cloud
@@ -108,7 +108,7 @@ jobs:
     steps:
       - id: checkout
         name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - id: auth
         name: Authenticate with Google Cloud
@@ -150,7 +150,7 @@ jobs:
     steps:
       - id: checkout
         name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - id: commit
         uses: prompt/actions-commit-hash@v3
