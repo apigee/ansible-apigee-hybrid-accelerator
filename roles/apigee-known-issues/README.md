@@ -1,38 +1,46 @@
 Role Name
 =========
 
-A brief description of the role goes here.
+This role applies workarounds for Apigee Hybrid known issues.
 
 Requirements
 ------------
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+* `kubectl` should be configured to connect to the Apigee Hybrid cluster.
+* The user running the playbook should have cluster-admin privileges.
 
 Role Variables
 --------------
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+* `setup_path`: The path to a directory on the remote host where temporary files will be created. Defaults to `~`.
+* `enable_fixes`: A list of fixes to apply. The default list of fixes is:
+  * `416634326_delete_crd`
+  * `416634326_update_role`
+  * `416634326_rollout_restart`
 
 Dependencies
 ------------
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+This role has no dependencies on other Ansible roles.
 
 Example Playbook
 ----------------
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
+Here is an example of how to use this role:
 
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
+```yaml
+- hosts: localhost
+  connection: local
+  roles:
+    - apigee-known-issues
+```
 
 License
 -------
 
-BSD
+Apache 2.0
 
 Author Information
 ------------------
 
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+This role was created by the Google Apigee team.

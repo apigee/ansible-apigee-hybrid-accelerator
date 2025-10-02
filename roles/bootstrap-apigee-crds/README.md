@@ -1,7 +1,7 @@
 Bootstrap Apigee Custom Resource Definitions
 =========
 
-This role creates the Apigee Custom Resource Definitions.Refer [this](https://cloud.google.com/apigee/docs/hybrid/kubernetes-resources#apigee:) to check the list of CRDs.
+This role applies the Apigee Custom Resource Definitions.Refer [this](https://cloud.google.com/apigee/docs/hybrid/kubernetes-resources#apigee:) to check the list of CRDs. This role first performs a dry-run to validate the changes before applying them.
 
 Requirements
 ------------
