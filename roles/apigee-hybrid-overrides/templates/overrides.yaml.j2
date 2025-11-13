@@ -1,7 +1,42 @@
+{# Copyright 2023 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#}
 {% from 'images.j2' import container_image %}
 {% from 'service_account.j2' import svc_account %}
 {% from 'http_proxy.j2' import proxy_settings %}
 {% from 'tolerations.j2' import put_toleration %}
+
+{# Validate mandatory parameters #}
+{% set mandatory_params = {
+  'gcp': ['region', 'projectID'],
+  'revision': [],
+  'k8sCluster': ['name', 'region'],
+  'instanceID': [],
+  'virtualhosts': [],
+  'envs': []
+} %}
+
+{% for param, sub_params in mandatory_params.items() %}
+  {% if param not in overrides %}
+    {{ raise("Mandatory parameter '{}' is not defined in overrides".format(param)) }}
+  {% endif %}
+  {% for sub_param in sub_params %}
+    {% if sub_param not in overrides[param] %}
+      {{ raise("Mandatory parameter '{}.{}' is not defined in overrides".format(param, sub_param)) }}
+    {% endif %}
+  {% endfor %}
+{% endfor %}
 
 namespace: apigee
 gcp:
@@ -17,60 +52,60 @@ k8sCluster:
 
 instanceID: "{{ overrides.instanceID }}"
 enhanceProxyLimits: "{{ overrides.enhanceProxyLimits |default('true')}}"
-contractProvider: "{{ overrides.contractProvider}}"
+contractProvider: "{{ overrides.get('contractProvider', '') }}"
 
-{% if overrides.imagePullSecrets -%}
+{% if 'imagePullSecrets' in overrides -%}
 imagePullSecrets:
 - name: {{ overrides.imagePullSecrets }}
 {%- endif %}
 
-{{ proxy_settings(overrides.httpProxy|default(false), overrides.httpProxy.host, overrides.httpProxy.port, overrides.httpProxy.scheme|default('HTTPS'), overrides.httpProxy.username|default(''), overrides.httpProxy.password|default('')) }}
+{{ proxy_settings(overrides.get('httpProxy', {}), overrides.get('httpProxy', {}).get('host'), overrides.get('httpProxy', {}).get('port'), overrides.get('httpProxy', {}).get('scheme', 'HTTPS'), overrides.get('httpProxy', {}).get('username', ''), overrides.get('httpProxy', {}).get('password', '')) }}
 
-{% if overrides.nodeSelector.requiredForScheduling != "" -%}
+{% if 'nodeSelector' in overrides and 'requiredForScheduling' in overrides.nodeSelector -%}
 nodeSelector:
   requiredForScheduling: {{ overrides.nodeSelector.requiredForScheduling|default('false',true) }}
   apigeeRuntime:
-    key: "{{ overrides.nodeSelector.apigeeRuntime.key|default('gke-nodepool') }}"
-    value: "{{ overrides.nodeSelector.apigeeRuntime.value|default('runtime') }}"
+    key: "{{ overrides.nodeSelector.get('apigeeRuntime', {}).get('key', 'gke-nodepool') }}"
+    value: "{{ overrides.nodeSelector.get('apigeeRuntime', {}).get('value', 'runtime') }}"
   apigeeData:
-    key: "{{ overrides.nodeSelector.apigeeData.key|default('gke-nodepool') }}"
-    value: "{{ overrides.nodeSelector.apigeeData.value|default('data') }}"
+    key: "{{ overrides.nodeSelector.get('apigeeData', {}).get('key', 'gke-nodepool') }}"
+    value: "{{ overrides.nodeSelector.get('apigeeData', {}).get('value', 'data') }}"
 {%- endif %}
 
 
-{% if overrides.ingressGateways|default([])|length > 0 %}
+{% if overrides.get('ingressGateways', [])|length > 0 %}
 ingressGateways:
 {% endif %}
-{% for ing_gw in overrides.ingressGateways|default([]) -%}
+{% for ing_gw in overrides.get('ingressGateways', []) -%}
 - name: {{ ing_gw.name }} # maximum 17 characters. See Known issue 243167389.
-  replicaCountMin: {{ ing_gw.replicaCountMin|default('2') }}
-  replicaCountMax: {{ ing_gw.replicaCountMax|default('10') }}
+  replicaCountMin: {{ ing_gw.get('replicaCountMin', '2') }}
+  replicaCountMax: {{ ing_gw.get('replicaCountMax', '10') }}
   resources:
     limits:
-      cpu: {{ ing_gw.resources.limits.cpu|default('2000m') }}
-      memory: {{ ing_gw.resources.limits.memory|default('1Gi') }}
+      cpu: {{ ing_gw.get('resources', {}).get('limits', {}).get('cpu', '2000m') }}
+      memory: {{ ing_gw.get('resources', {}).get('limits', {}).get('memory', '1Gi') }}
     requests:
-      cpu: {{ ing_gw.resources.requests.cpu|default('300m') }}
-      memory: {{ ing_gw.resources.requests.memory|default('128Mi') }}
+      cpu: {{ ing_gw.get('resources', {}).get('requests', {}).get('cpu', '300m') }}
+      memory: {{ ing_gw.get('resources', {}).get('requests', {}).get('memory', '128Mi') }}
 {% endfor %}
 
 
 virtualhosts:
-{% for vhost_data in overrides.virtualhosts -%}
+{% for vhost_data in overrides.get('virtualhosts', []) -%}
 - name: {{ vhost_data.name }}
-  sslSecret: {{ vhost_data.sslSecret if vhost_data.sslSecret else vhost_data.name+"-ssl-secret" }}
+  sslSecret: {{ vhost_data.sslSecret if 'sslSecret' in vhost_data else vhost_data.name+"-ssl-secret" }}
 {% macro virtualhosts_tls_mode() %}
-{% if vhost_data.tlsMode|default('SIMPLE') == 'MUTUAL' -%}
+{% if vhost_data.get('tlsMode', 'SIMPLE') == 'MUTUAL' -%}
   tlsMode: MUTUAL
 {%- endif %}
 {% endmacro %}
   {{ virtualhosts_tls_mode()|indent( width=4) }}
   selector:
 {% macro virtualhosts_selector() %}
-{% if vhost_data.get('selector') -%}
-{% for k_s,v_s in vhost_data.get('selector').items() -%}
+{% if 'selector' in vhost_data -%}
+{% for k_s,v_s in vhost_data.get('selector', {}).items() -%}
 
-{% set ing_gw_name = overrides.ingressGateways|default([]) | map(attribute='name') | list %}
+{% set ing_gw_name = overrides.get('ingressGateways', []) | map(attribute='name') | list %}
 {% if k_s == 'ingress_name' -%}
 {% if v_s in ing_gw_name %}
 {{ '  ' }}{{ k_s }}: {{ v_s }}
@@ -88,63 +123,63 @@ virtualhosts:
 {% endfor %}
 
 envs:
-{% for each_env in overrides.envs -%}
+{% for each_env in overrides.get('envs', []) -%}
 - name: {{ each_env.name }}
   components:
     synchronizer:
-      replicaCountMax: {{ each_env.get('synchronizer',{}).get('replicaCountMax',{}) if each_env.get('synchronizer',{}).get('replicaCountMax',{}) else '' }}
-      replicaCountMin: {{ each_env.get('synchronizer',{}).get('replicaCountMin',{}) if each_env.get('synchronizer',{}).get('replicaCountMin',{}) else '' }}
+      replicaCountMax: {{ each_env.get('synchronizer',{}).get('replicaCountMax', '') }}
+      replicaCountMin: {{ each_env.get('synchronizer',{}).get('replicaCountMin', '') }}
     udca:
-      replicaCountMax: {{ each_env.get('udca',{}).get('replicaCountMax',{}) if each_env.get('udca',{}).get('replicaCountMax',{}) else '' }}
-      replicaCountMin: {{ each_env.get('udca',{}).get('replicaCountMin',{}) if each_env.get('udca',{}).get('replicaCountMin',{}) else '' }}
+      replicaCountMax: {{ each_env.get('udca',{}).get('replicaCountMax', '') }}
+      replicaCountMin: {{ each_env.get('udca',{}).get('replicaCountMin', '') }}
     runtime:
-      replicaCountMax: {{ each_env.get('runtime',{}).get('replicaCountMax',{}) if each_env.get('runtime',{}).get('replicaCountMax',{}) else '' }}
-      replicaCountMin: {{ each_env.get('runtime',{}).get('replicaCountMin',{}) if each_env.get('runtime',{}).get('replicaCountMin',{}) else '' }}
+      replicaCountMax: {{ each_env.get('runtime',{}).get('replicaCountMax', '') }}
+      replicaCountMin: {{ each_env.get('runtime',{}).get('replicaCountMin', '') }}
   serviceAccountSecretRefs:
-    synchronizer: {{ svc_account(create_service_account, deployment_environment,'synchronizer', overrides.synchronizer.serviceAccountRef) | indent( width=4)}}
-    udca: {{ svc_account(create_service_account, deployment_environment,'udca', overrides.udca.serviceAccountRef) | indent( width=4)}}
-    runtime: {{ svc_account(create_service_account, deployment_environment,'runtime', overrides.runtime.serviceAccountRef) | indent( width=4)}}
-  {{ proxy_settings(each_env.httpProxy|default(false), each_env.httpProxy.host, each_env.httpProxy.port, each_env.httpProxy.scheme|default('HTTPS'), each_env.httpProxy.username|default(''), each_env.httpProxy.password|default(''))| indent( width=2) }}
+    synchronizer: {{ svc_account(create_service_account, deployment_environment,'synchronizer', overrides.get('synchronizer', {}).get('serviceAccountRef')) | indent( width=4)}}
+    udca: {{ svc_account(create_service_account, deployment_environment,'udca', overrides.get('udca', {}).get('serviceAccountRef')) | indent( width=4)}}
+    runtime: {{ svc_account(create_service_account, deployment_environment,'runtime', overrides.get('runtime', {}).get('serviceAccountRef')) | indent( width=4)}}
+  {{ proxy_settings(each_env.get('httpProxy', {}), each_env.get('httpProxy', {}).get('host'), each_env.get('httpProxy', {}).get('port'), each_env.get('httpProxy', {}).get('scheme', 'HTTPS'), each_env.get('httpProxy', {}).get('username', ''), each_env.get('httpProxy', {}).get('password', ''))| indent( width=2) }}
 {% endfor %}
 
 mart:
 {% if overrides.get('mart', {}).get('tolerations', {})|length > 0 %}
   {{ put_toleration(overrides.mart.tolerations) | indent(width=2) }}
 {% endif %}
-  {{ container_image(overrides.mart.image.url,overrides.mart.image.tag,overrides.mart.image.pullPolicy,) | indent( width=2)}}
-  serviceAccountRef: {{ svc_account(create_service_account, deployment_environment,'mart', overrides.mart.serviceAccountRef) | indent( width=2)}}
-  replicaCountMax: {{ overrides.mart.replicaCountMax }}
-  replicaCountMin: {{ overrides.mart.replicaCountMax }}
-  resources:  
+  {{ container_image(overrides.get('mart', {}).get('image', {}).get('url'), overrides.get('mart', {}).get('image', {}).get('tag'), overrides.get('mart', {}).get('image', {}).get('pullPolicy')) | indent( width=2)}}
+  serviceAccountRef: {{ svc_account(create_service_account, deployment_environment,'mart', overrides.get('mart', {}).get('serviceAccountRef')) | indent( width=2)}}
+  replicaCountMax: {{ overrides.get('mart', {}).get('replicaCountMax') }}
+  replicaCountMin: {{ overrides.get('mart', {}).get('replicaCountMin') }}
+  resources:
     requests:
-      cpu: {{ overrides.mart.resources.requests.cpu }}
-      memory: {{ overrides.mart.resources.requests.memory }}
+      cpu: {{ overrides.get('mart', {}).get('resources', {}).get('requests', {}).get('cpu') }}
+      memory: {{ overrides.get('mart', {}).get('resources', {}).get('requests', {}).get('memory') }}
 
 synchronizer:
 {% if overrides.get('synchronizer', {}).get('tolerations', {})|length > 0 %}
   {{ put_toleration(overrides.synchronizer.tolerations) | indent(width=2) }}
 {% endif %}
-  replicaCountMax: {{ overrides.synchronizer.replicaCountMax }}
-  replicaCountMin: {{ overrides.synchronizer.replicaCountMin }}
-  serviceAccountRef: {{ svc_account(create_service_account, deployment_environment,'synchronizer', overrides.synchronizer.serviceAccountRef) | indent( width=2)}}
-  resources:  
+  replicaCountMax: {{ overrides.get('synchronizer', {}).get('replicaCountMax') }}
+  replicaCountMin: {{ overrides.get('synchronizer', {}).get('replicaCountMin') }}
+  serviceAccountRef: {{ svc_account(create_service_account, deployment_environment,'synchronizer', overrides.get('synchronizer', {}).get('serviceAccountRef')) | indent( width=2)}}
+  resources:
     requests:
-      cpu: {{ overrides.synchronizer.resources.requests.cpu }}
-      memory: {{ overrides.synchronizer.resources.requests.cpu }}
-  {{ container_image(overrides.synchronizer.image.url,overrides.synchronizer.image.tag,overrides.synchronizer.image.pullPolicy,) | indent( width=2)}}
+      cpu: {{ overrides.get('synchronizer', {}).get('resources', {}).get('requests', {}).get('cpu') }}
+      memory: {{ overrides.get('synchronizer', {}).get('resources', {}).get('requests', {}).get('memory') }}
+  {{ container_image(overrides.get('synchronizer', {}).get('image', {}).get('url'), overrides.get('synchronizer', {}).get('image', {}).get('tag'), overrides.get('synchronizer', {}).get('image', {}).get('pullPolicy')) | indent( width=2)}}
 
 runtime:
 {% if overrides.get('runtime', {}).get('tolerations', {})|length > 0 %}
   {{ put_toleration(overrides.runtime.tolerations) | indent(width=2) }}
 {% endif %}
-  replicaCountMax: {{ overrides.runtime.replicaCountMax }}
-  replicaCountMin: {{ overrides.runtime.replicaCountMin }}
-  serviceAccountRef: {{ svc_account(create_service_account, deployment_environment,'runtime', overrides.runtime.serviceAccountRef) | indent( width=2)}}
+  replicaCountMax: {{ overrides.get('runtime', {}).get('replicaCountMax') }}
+  replicaCountMin: {{ overrides.get('runtime', {}).get('replicaCountMin') }}
+  serviceAccountRef: {{ svc_account(create_service_account, deployment_environment,'runtime', overrides.get('runtime', {}).get('serviceAccountRef')) | indent( width=2)}}
   resources:
     requests:
-      cpu: {{ overrides.runtime.resources.requests.cpu }}
-      memory: {{ overrides.runtime.resources.requests.cpu }}
-  {{ container_image(overrides.runtime.image.url,overrides.runtime.image.tag,overrides.runtime.image.pullPolicy,) | indent( width=2)}}
+      cpu: {{ overrides.get('runtime', {}).get('resources', {}).get('requests', {}).get('cpu') }}
+      memory: {{ overrides.get('runtime', {}).get('resources', {}).get('requests', {}).get('memory') }}
+  {{ container_image(overrides.get('runtime', {}).get('image', {}).get('url'), overrides.get('runtime', {}).get('image', {}).get('tag'), overrides.get('runtime', {}).get('image', {}).get('pullPolicy')) | indent( width=2)}}
 
 cassandra:
   {% if cassandra_seed_host|default('',true) != '' -%}
@@ -152,17 +187,17 @@ cassandra:
   {%- endif %}
 
   datacenter: "{{ cassandra_dc }}"
-  replicaCount: {{ overrides.cassandra.replicaCount }}
-  hostNetwork: {{ overrides.cassandra.hostNetwork }}
+  replicaCount: {{ overrides.get('cassandra', {}).get('replicaCount') }}
+  hostNetwork: {{ overrides.get('cassandra', {}).get('hostNetwork') }}
   resources:
     requests:
-      cpu: {{ overrides.cassandra.resources.requests.cpu }}
-      memory: {{ overrides.cassandra.resources.requests.memory }}
-  maxHeapSize: {{ overrides.cassandra.maxHeapSize }}
-  heapNewSize: {{ overrides.cassandra.heapNewSize }}
+      cpu: {{ overrides.get('cassandra', {}).get('resources', {}).get('requests', {}).get('cpu') }}
+      memory: {{ overrides.get('cassandra', {}).get('resources', {}).get('requests', {}).get('memory') }}
+  maxHeapSize: {{ overrides.get('cassandra', {}).get('maxHeapSize') }}
+  heapNewSize: {{ overrides.get('cassandra', {}).get('heapNewSize') }}
   storage:
-    capacity: {{ overrides.cassandra.storage.capacity }}
-    storageClass: {{ overrides.cassandra.storage.storageClass }}
+    capacity: {{ overrides.get('cassandra', {}).get('storage', {}).get('capacity') }}
+    storageClass: {{ overrides.get('cassandra', {}).get('storage', {}).get('storageClass') }}
 {% if overrides.get('cassandra', {}).get('tolerations', {})|length > 0 %}
   {{ put_toleration(overrides.cassandra.tolerations) | indent(width=2) }}
 {% endif %}
@@ -171,62 +206,62 @@ cassandra:
     successThreshold: 2
     failureThreshold: 2
     periodSeconds: 10
-    initialDelaySeconds: 20 
-  {% if overrides.cassandra.auth.secret|default('',true) != '' -%}
+    initialDelaySeconds: 20
+  {% if 'auth' in overrides.get('cassandra', {}) and 'secret' in overrides.get('cassandra', {}).get('auth', {}) -%}
   auth:
     secret: {{ overrides.cassandra.auth.secret }}
-    {{ container_image(overrides.cassandra.auth.image.url,overrides.cassandra.auth.image.tag,overrides.cassandra.auth.image.pullPolicy,) | indent( width=2)}}
+    {{ container_image(overrides.get('cassandra', {}).get('auth', {}).get('image', {}).get('url'), overrides.get('cassandra', {}).get('auth', {}).get('image', {}).get('tag'), overrides.get('cassandra', {}).get('auth', {}).get('image', {}).get('pullPolicy')) | indent( width=2)}}
   {%- endif %}
 
-  {{ container_image(overrides.cassandra.image.url,overrides.cassandra.image.tag,overrides.cassandra.image.pullPolicy,) | indent( width=2)}}
+  {{ container_image(overrides.get('cassandra', {}).get('image', {}).get('url'), overrides.get('cassandra', {}).get('image', {}).get('tag'), overrides.get('cassandra', {}).get('image', {}).get('pullPolicy')) | indent( width=2)}}
   backup:
-    enabled: {{ overrides.cassandra.backup.enabled }}
-    cloudProvider: {{ overrides.cassandra.backup.cloudProvider | default('GCP')}}
+    enabled: {{ overrides.get('cassandra', {}).get('backup', {}).get('enabled') }}
+    cloudProvider: {{ overrides.get('cassandra', {}).get('backup', {}).get('cloudProvider', 'GCP')}}
 
-    {% if overrides.cassandra.backup.dbStorageBucket|default('',true) != '' -%}
+    {% if 'dbStorageBucket' in overrides.get('cassandra', {}).get('backup', {}) -%}
     dbStorageBucket: {{ overrides.cassandra.backup.dbStorageBucket }}
     {%- endif %}
 
-    serviceAccountRef: {{ svc_account(create_service_account, deployment_environment,'cassandra', overrides.cassandra.backup.serviceAccountRef)}}
-    schedule: {{ overrides.cassandra.backup.schedule }}
-    {{ container_image(overrides.cassandra.backup.image.url,overrides.cassandra.backup.image.tag,overrides.cassandra.backup.image.pullPolicy,) | indent( width=4)}}
+    serviceAccountRef: {{ svc_account(create_service_account, deployment_environment,'cassandra', overrides.get('cassandra', {}).get('backup', {}).get('serviceAccountRef'))}}
+    schedule: {{ overrides.get('cassandra', {}).get('backup', {}).get('schedule') }}
+    {{ container_image(overrides.get('cassandra', {}).get('backup', {}).get('image', {}).get('url'), overrides.get('cassandra', {}).get('backup', {}).get('image', {}).get('tag'), overrides.get('cassandra', {}).get('backup', {}).get('image', {}).get('pullPolicy')) | indent( width=4)}}
   restore:
-    enabled: {{ overrides.cassandra.restore.enabled }}
-    cloudProvider: {{ overrides.cassandra.restore.cloudProvider| default('GCP') }}
+    enabled: {{ overrides.get('cassandra', {}).get('restore', {}).get('enabled') }}
+    cloudProvider: {{ overrides.get('cassandra', {}).get('restore', {}).get('cloudProvider', 'GCP') }}
 
-    {% if overrides.cassandra.restore.dbStorageBucket|default('',true) != '' -%}
+    {% if 'dbStorageBucket' in overrides.get('cassandra', {}).get('restore', {}) -%}
     dbStorageBucket: {{ overrides.cassandra.restore.dbStorageBucket }}
     {%- endif %}
 
-    serviceAccountRef: {{ svc_account(create_service_account, deployment_environment,'cassandra', overrides.cassandra.restore.serviceAccountRef) }}
-    snapshotTimestamp: {{ overrides.cassandra.restore.snapshotTimestamp }}
-    {{ container_image(overrides.cassandra.restore.image.url,overrides.cassandra.restore.image.tag,overrides.cassandra.restore.image.pullPolicy,) | indent( width=4)}}
+    serviceAccountRef: {{ svc_account(create_service_account, deployment_environment,'cassandra', overrides.get('cassandra', {}).get('restore', {}).get('serviceAccountRef')) }}
+    snapshotTimestamp: {{ overrides.get('cassandra', {}).get('restore', {}).get('snapshotTimestamp') }}
+    {{ container_image(overrides.get('cassandra', {}).get('restore', {}).get('image', {}).get('url'), overrides.get('cassandra', {}).get('restore', {}).get('image', {}).get('tag'), overrides.get('cassandra', {}).get('restore', {}).get('image', {}).get('pullPolicy')) | indent( width=4)}}
 
 udca:
 {% if overrides.get('udca', {}).get('tolerations', {})|length > 0 %}
   {{ put_toleration(overrides.udca.tolerations) | indent(width=2) }}
 {% endif %}
-  replicaCountMax: {{ overrides.udca.replicaCountMax }}
-  replicaCountMin: {{ overrides.udca.replicaCountMin }}
+  replicaCountMax: {{ overrides.get('udca', {}).get('replicaCountMax') }}
+  replicaCountMin: {{ overrides.get('udca', {}).get('replicaCountMin') }}
   resources:
     requests:
-      cpu: {{ overrides.udca.resources.requests.cpu }}
-  {{ container_image(overrides.udca.image.url,overrides.udca.image.tag,overrides.udca.image.pullPolicy,) | indent( width=2)}}
-  serviceAccountRef: {{ svc_account(create_service_account, deployment_environment,'udca', overrides.udca.serviceAccountRef) | indent( width=2)}}
+      cpu: {{ overrides.get('udca', {}).get('resources', {}).get('requests', {}).get('cpu') }}
+  {{ container_image(overrides.get('udca', {}).get('image', {}).get('url'), overrides.get('udca', {}).get('image', {}).get('tag'), overrides.get('udca', {}).get('image', {}).get('pullPolicy')) | indent( width=2)}}
+  serviceAccountRef: {{ svc_account(create_service_account, deployment_environment,'udca', overrides.get('udca', {}).get('serviceAccountRef')) | indent( width=2)}}
   fluentd:
-    {{ container_image(overrides.udca.fluentd.image.url,overrides.udca.fluentd.image.tag,overrides.udca.fluentd.image.pullPolicy,) | indent( width=4)}}
+    {{ container_image(overrides.get('udca', {}).get('fluentd', {}).get('image', {}).get('url'), overrides.get('udca', {}).get('fluentd', {}).get('image', {}).get('tag'), overrides.get('udca', {}).get('fluentd', {}).get('image', {}).get('pullPolicy')) | indent( width=4)}}
     resources:
       limits:
-        memory: {{ overrides.udca.fluentd.resources.limits.memory }}
+        memory: {{ overrides.get('udca', {}).get('fluentd', {}).get('resources', {}).get('limits', {}).get('memory') }}
       requests:
-        cpu: {{ overrides.udca.fluentd.resources.requests.cpu }}
-        memory: {{ overrides.udca.fluentd.resources.requests.memory }}
+        cpu: {{ overrides.get('udca', {}).get('fluentd', {}).get('resources', {}).get('requests', {}).get('cpu') }}
+        memory: {{ overrides.get('udca', {}).get('fluentd', {}).get('resources', {}).get('requests', {}).get('memory') }}
 
 logger:
-  enabled: {{ 'true' if overrides.logger.enabled else 'false' }}
-  {{ container_image(overrides.logger.image.url,overrides.logger.image.tag,overrides.logger.image.pullPolicy,) | indent( width=2)}}
-  serviceAccountRef: {{ svc_account(create_service_account, deployment_environment,'logger', overrides.logger.serviceAccountRef) | indent( width=2)}}
-  {% if overrides.logger.envVars|default('',true) != '' -%}
+  enabled: {{ 'true' if overrides.get('logger', {}).get('enabled') else 'false' }}
+  {{ container_image(overrides.get('logger', {}).get('image', {}).get('url'), overrides.get('logger', {}).get('image', {}).get('tag'), overrides.get('logger', {}).get('image', {}).get('pullPolicy')) | indent( width=2)}}
+  serviceAccountRef: {{ svc_account(create_service_account, deployment_environment,'logger', overrides.get('logger', {}).get('serviceAccountRef')) | indent( width=2)}}
+  {% if 'envVars' in overrides.get('logger', {}) -%}
   envVars:
   {% for key, value in overrides.logger.envVars.items() %}
   {{ key }}: {{ value }}
@@ -235,9 +270,9 @@ logger:
 
   resources:
     requests:
-      cpu: {{ overrides.logger.resources.requests.cpu }}
-      memory: {{ overrides.logger.resources.requests.memory }}
-  {% if overrides.logger.proxyURL|default('',true) != '' -%}
+      cpu: {{ overrides.get('logger', {}).get('resources', {}).get('requests', {}).get('cpu') }}
+      memory: {{ overrides.get('logger', {}).get('resources', {}).get('requests', {}).get('memory') }}
+  {% if 'proxyURL' in overrides.get('logger', {}) -%}
   proxyURL: {{ overrides.logger.proxyURL }}
   {%- endif %}
 {% if overrides.get('logger', {}).get('tolerations', {})|length > 0 %}
@@ -251,11 +286,11 @@ metrics:
   {{ put_toleration(overrides.metrics.tolerations) | indent(width=2) }}
 {% endif %}
   prometheus:
-    {{ container_image(overrides.metrics.prometheus.image.url,overrides.metrics.prometheus.image.tag,overrides.metrics.prometheus.image.pullPolicy,) | indent( width=4)}}
+    {{ container_image(overrides.get('metrics', {}).get('prometheus', {}).get('image', {}).get('url'), overrides.get('metrics', {}).get('prometheus', {}).get('image', {}).get('tag'), overrides.get('metrics', {}).get('prometheus', {}).get('image', {}).get('pullPolicy')) | indent( width=4)}}
   sdSidecar:
-    {{ container_image(overrides.metrics.sdSidecar.image.url,overrides.metrics.sdSidecar.image.tag,overrides.metrics.sdSidecar.image.pullPolicy,) | indent( width=4)}}
-  serviceAccountRef: {{ svc_account(create_service_account, deployment_environment,'metrics', overrides.metrics.serviceAccountRef) | indent( width=2)}}
-  {% if overrides.metrics.proxyURL|default('',true) != '' -%}
+    {{ container_image(overrides.get('metrics', {}).get('sdSidecar', {}).get('image', {}).get('url'), overrides.get('metrics', {}).get('sdSidecar', {}).get('image', {}).get('tag'), overrides.get('metrics', {}).get('sdSidecar', {}).get('image', {}).get('pullPolicy')) | indent( width=4)}}
+  serviceAccountRef: {{ svc_account(create_service_account, deployment_environment,'metrics', overrides.get('metrics', {}).get('serviceAccountRef')) | indent( width=2)}}
+  {% if 'proxyURL' in overrides.get('metrics', {}) -%}
   proxyURL: {{ overrides.metrics.proxyURL }}
   {%- endif %}
 
@@ -263,44 +298,44 @@ connectAgent:
 {% if overrides.get('connectAgent', {}).get('tolerations', {})|length > 0 %}
   {{ put_toleration(overrides.connectAgent.tolerations) | indent(width=2) }}
 {% endif %}
-  replicaCountMax: {{ overrides.connectAgent.replicaCountMax }}
-  replicaCountMin: {{ overrides.connectAgent.replicaCountMin }}
-  serviceAccountRef: {{ svc_account(create_service_account, deployment_environment,'mart', overrides.mart.serviceAccountRef) | indent( width=2)}}
-  {{ container_image(overrides.connectAgent.image.url,overrides.connectAgent.image.tag,overrides.connectAgent.image.pullPolicy,) | indent( width=2)}}
+  replicaCountMax: {{ overrides.get('connectAgent', {}).get('replicaCountMax') }}
+  replicaCountMin: {{ overrides.get('connectAgent', {}).get('replicaCountMin') }}
+  serviceAccountRef: {{ svc_account(create_service_account, deployment_environment,'mart', overrides.get('mart', {}).get('serviceAccountRef')) | indent( width=2)}}
+  {{ container_image(overrides.get('connectAgent', {}).get('image', {}).get('url'), overrides.get('connectAgent', {}).get('image', {}).get('tag'), overrides.get('connectAgent', {}).get('image', {}).get('pullPolicy')) | indent( width=2)}}
   resources:
     requests:
-      cpu: {{ overrides.connectAgent.resources.requests.cpu }}
-      memory: {{ overrides.connectAgent.resources.requests.memory }}
+      cpu: {{ overrides.get('connectAgent', {}).get('resources', {}).get('requests', {}).get('cpu') }}
+      memory: {{ overrides.get('connectAgent', {}).get('resources', {}).get('requests', {}).get('memory') }}
 
 watcher:
 {% if overrides.get('watcher', {}).get('tolerations', {})|length > 0 %}
   {{ put_toleration(overrides.watcher.tolerations) | indent(width=2) }}
 {% endif %}
-  replicaCountMax: {{ overrides.watcher.replicaCountMax }}
-  replicaCountMin: {{ overrides.watcher.replicaCountMin }}
-  {{ container_image(overrides.watcher.image.url,overrides.watcher.image.tag,overrides.watcher.image.pullPolicy,) | indent( width=2)}}
-  serviceAccountRef: {{ svc_account(create_service_account, deployment_environment,'watcher', overrides.watcher.serviceAccountRef) | indent( width=2)}}
+  replicaCountMax: {{ overrides.get('watcher', {}).get('replicaCountMax') }}
+  replicaCountMin: {{ overrides.get('watcher', {}).get('replicaCountMin') }}
+  {{ container_image(overrides.get('watcher', {}).get('image', {}).get('url'), overrides.get('watcher', {}).get('image', {}).get('tag'), overrides.get('watcher', {}).get('image', {}).get('pullPolicy')) | indent( width=2)}}
+  serviceAccountRef: {{ svc_account(create_service_account, deployment_environment,'watcher', overrides.get('watcher', {}).get('serviceAccountRef')) | indent( width=2)}}
   resources:
     requests:
-      cpu: {{ overrides.watcher.resources.requests.cpu }}
-      memory: {{ overrides.watcher.resources.requests.memory }}
+      cpu: {{ overrides.get('watcher', {}).get('resources', {}).get('requests', {}).get('cpu') }}
+      memory: {{ overrides.get('watcher', {}).get('resources', {}).get('requests', {}).get('memory') }}
 
 redis:
 {% if overrides.get('redis', {}).get('tolerations', {})|length > 0 %}
   {{ put_toleration(overrides.redis.tolerations) | indent(width=2) }}
 {% endif %}
-  replicaCount: {{ overrides.redis.replicaCount }}
-  {{ container_image(overrides.redis.image.url,overrides.redis.image.tag,overrides.redis.image.pullPolicy,) | indent( width=2)}}
+  replicaCount: {{ overrides.get('redis', {}).get('replicaCount') }}
+  {{ container_image(overrides.get('redis', {}).get('image', {}).get('url'), overrides.get('redis', {}).get('image', {}).get('tag'), overrides.get('redis', {}).get('image', {}).get('pullPolicy')) | indent( width=2)}}
   envoy:
-    replicaCountMax: {{ overrides.redis.envoy.replicaCountMax }}
-    replicaCountMin: {{ overrides.redis.envoy.replicaCountMin }}
-    {{ container_image(overrides.redis.envoy.image.url,overrides.redis.envoy.image.tag,overrides.redis.envoy.image.pullPolicy,) | indent( width=4)}}
+    replicaCountMax: {{ overrides.get('redis', {}).get('envoy', {}).get('replicaCountMax') }}
+    replicaCountMin: {{ overrides.get('redis', {}).get('envoy', {}).get('replicaCountMin') }}
+    {{ container_image(overrides.get('redis', {}).get('envoy', {}).get('image', {}).get('url'), overrides.get('redis', {}).get('envoy', {}).get('image', {}).get('tag'), overrides.get('redis', {}).get('envoy', {}).get('image', {}).get('pullPolicy')) | indent( width=4)}}
     resources:
       requests:
-        cpu: {{ overrides.redis.envoy.resources.requests.cpu }}
+        cpu: {{ overrides.get('redis', {}).get('envoy', {}).get('resources', {}).get('requests', {}).get('cpu') }}
   resources:
     requests:
-      cpu: {{ overrides.redis.resources.requests.cpu }}
+      cpu: {{ overrides.get('redis', {}).get('resources', {}).get('requests', {}).get('cpu') }}
 
 ao:
 {% if overrides.get('ao', {}).get('tolerations', {})|length > 0 %}
@@ -309,19 +344,19 @@ ao:
   args:
     # This configuration is introduced in hybrid v1.8
     disableIstioConfigInAPIServer: true
-  {{ container_image(overrides.ao.image.url,overrides.ao.image.tag,overrides.ao.image.pullPolicy,) | indent( width=2)}}
+  {{ container_image(overrides.get('ao', {}).get('image', {}).get('url'), overrides.get('ao', {}).get('image', {}).get('tag'), overrides.get('ao', {}).get('image', {}).get('pullPolicy')) | indent( width=2)}}
   installer:
-    {{ container_image(overrides.ao.installer.image.url,overrides.ao.installer.image.tag,overrides.ao.installer.image.pullPolicy,) | indent( width=4)}}
+    {{ container_image(overrides.get('ao', {}).get('installer', {}).get('image', {}).get('url'), overrides.get('ao', {}).get('installer', {}).get('image', {}).get('tag'), overrides.get('ao', {}).get('installer', {}).get('image', {}).get('pullPolicy')) | indent( width=4)}}
   resources:
     requests:
-      cpu: {{ overrides.ao.resources.requests.cpu }}
-      memory: {{ overrides.ao.resources.requests.memory }}
+      cpu: {{ overrides.get('ao', {}).get('resources', {}).get('requests', {}).get('cpu') }}
+      memory: {{ overrides.get('ao', {}).get('resources', {}).get('requests', {}).get('memory') }}
     limits:
-      cpu: {{ overrides.ao.resources.limits.cpu }}
-      memory: {{ overrides.ao.resources.limits.memory }}
+      cpu: {{ overrides.get('ao', {}).get('resources', {}).get('limits', {}).get('cpu') }}
+      memory: {{ overrides.get('ao', {}).get('resources', {}).get('limits', {}).get('memory') }}
 
 kubeRBACProxy:
-  {{ container_image(overrides.kubeRBACProxy.image.url,overrides.kubeRBACProxy.image.tag,overrides.kubeRBACProxy.image.pullPolicy,) | indent( width=2)}}
+  {{ container_image(overrides.get('kubeRBACProxy', {}).get('image', {}).get('url'), overrides.get('kubeRBACProxy', {}).get('image', {}).get('tag'), overrides.get('kubeRBACProxy', {}).get('image', {}).get('pullPolicy')) | indent( width=2)}}
 
 guardrails:
 {% if overrides.get('guardrails', {}).get('tolerations', {})|length > 0 %}
