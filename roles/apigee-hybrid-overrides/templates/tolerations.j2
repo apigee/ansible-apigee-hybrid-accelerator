@@ -1,0 +1,21 @@
+{# MAIN MACRO: Renders the 'tolerations:' key and loops through all items. #}
+{% macro put_toleration(tolerations_list) %}
+tolerations:
+{% for item in tolerations_list %}
+{{ _put_single_toleration(item) }}
+{% endfor %}
+{% endmacro %}
+
+
+{# HELPER MACRO: Renders a single toleration item. #}
+{% macro _put_single_toleration(item) %}
+- key: "{{ item.key }}"
+  operator: "{{ item.operator }}"
+{% if item.value is defined %}
+  value: "{{ item.value }}"
+{% endif %}
+  effect: "{{ item.effect }}"
+{% if item.tolerationSeconds is defined %}
+  tolerationSeconds: {{ item.tolerationSeconds }}
+{% endif %}
+{% endmacro %}

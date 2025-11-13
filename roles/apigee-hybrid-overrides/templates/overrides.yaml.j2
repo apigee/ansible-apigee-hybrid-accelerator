@@ -1,6 +1,8 @@
 {% from 'images.j2' import container_image %}
 {% from 'service_account.j2' import svc_account %}
 {% from 'http_proxy.j2' import proxy_settings %}
+{% from 'tolerations.j2' import put_toleration %}
+
 namespace: apigee
 gcp:
   region: {{ overrides.gcp.region }}
@@ -14,7 +16,7 @@ k8sCluster:
   region: "{{ overrides.k8sCluster.region }}"
 
 instanceID: "{{ overrides.instanceID }}"
-enhanceProxyLimits: "{{ overrides.enhanceProxyLimits }}"
+enhanceProxyLimits: "{{ overrides.enhanceProxyLimits |default('true')}}"
 contractProvider: "{{ overrides.contractProvider}}"
 
 {% if overrides.imagePullSecrets -%}
@@ -106,6 +108,9 @@ envs:
 {% endfor %}
 
 mart:
+{% if overrides.get('mart', {}).get('tolerations', {})|length > 0 %}
+  {{ put_toleration(overrides.mart.tolerations) | indent(width=2) }}
+{% endif %}
   {{ container_image(overrides.mart.image.url,overrides.mart.image.tag,overrides.mart.image.pullPolicy,) | indent( width=2)}}
   serviceAccountRef: {{ svc_account(create_service_account, deployment_environment,'mart', overrides.mart.serviceAccountRef) | indent( width=2)}}
   replicaCountMax: {{ overrides.mart.replicaCountMax }}
@@ -116,6 +121,9 @@ mart:
       memory: {{ overrides.mart.resources.requests.memory }}
 
 synchronizer:
+{% if overrides.get('synchronizer', {}).get('tolerations', {})|length > 0 %}
+  {{ put_toleration(overrides.synchronizer.tolerations) | indent(width=2) }}
+{% endif %}
   replicaCountMax: {{ overrides.synchronizer.replicaCountMax }}
   replicaCountMin: {{ overrides.synchronizer.replicaCountMin }}
   serviceAccountRef: {{ svc_account(create_service_account, deployment_environment,'synchronizer', overrides.synchronizer.serviceAccountRef) | indent( width=2)}}
@@ -126,6 +134,9 @@ synchronizer:
   {{ container_image(overrides.synchronizer.image.url,overrides.synchronizer.image.tag,overrides.synchronizer.image.pullPolicy,) | indent( width=2)}}
 
 runtime:
+{% if overrides.get('runtime', {}).get('tolerations', {})|length > 0 %}
+  {{ put_toleration(overrides.runtime.tolerations) | indent(width=2) }}
+{% endif %}
   replicaCountMax: {{ overrides.runtime.replicaCountMax }}
   replicaCountMin: {{ overrides.runtime.replicaCountMin }}
   serviceAccountRef: {{ svc_account(create_service_account, deployment_environment,'runtime', overrides.runtime.serviceAccountRef) | indent( width=2)}}
@@ -152,6 +163,9 @@ cassandra:
   storage:
     capacity: {{ overrides.cassandra.storage.capacity }}
     storageClass: {{ overrides.cassandra.storage.storageClass }}
+{% if overrides.get('cassandra', {}).get('tolerations', {})|length > 0 %}
+  {{ put_toleration(overrides.cassandra.tolerations) | indent(width=2) }}
+{% endif %}
   readinessProbe:
     timeoutSeconds: 60
     successThreshold: 2
@@ -167,7 +181,7 @@ cassandra:
   {{ container_image(overrides.cassandra.image.url,overrides.cassandra.image.tag,overrides.cassandra.image.pullPolicy,) | indent( width=2)}}
   backup:
     enabled: {{ overrides.cassandra.backup.enabled }}
-    cloudProvider: {{ overrides.cassandra.backup.cloudProvider }}
+    cloudProvider: {{ overrides.cassandra.backup.cloudProvider | default('GCP')}}
 
     {% if overrides.cassandra.backup.dbStorageBucket|default('',true) != '' -%}
     dbStorageBucket: {{ overrides.cassandra.backup.dbStorageBucket }}
@@ -178,7 +192,7 @@ cassandra:
     {{ container_image(overrides.cassandra.backup.image.url,overrides.cassandra.backup.image.tag,overrides.cassandra.backup.image.pullPolicy,) | indent( width=4)}}
   restore:
     enabled: {{ overrides.cassandra.restore.enabled }}
-    cloudProvider: {{ overrides.cassandra.restore.cloudProvider }}
+    cloudProvider: {{ overrides.cassandra.restore.cloudProvider| default('GCP') }}
 
     {% if overrides.cassandra.restore.dbStorageBucket|default('',true) != '' -%}
     dbStorageBucket: {{ overrides.cassandra.restore.dbStorageBucket }}
@@ -189,6 +203,9 @@ cassandra:
     {{ container_image(overrides.cassandra.restore.image.url,overrides.cassandra.restore.image.tag,overrides.cassandra.restore.image.pullPolicy,) | indent( width=4)}}
 
 udca:
+{% if overrides.get('udca', {}).get('tolerations', {})|length > 0 %}
+  {{ put_toleration(overrides.udca.tolerations) | indent(width=2) }}
+{% endif %}
   replicaCountMax: {{ overrides.udca.replicaCountMax }}
   replicaCountMin: {{ overrides.udca.replicaCountMin }}
   resources:
@@ -223,9 +240,16 @@ logger:
   {% if overrides.logger.proxyURL|default('',true) != '' -%}
   proxyURL: {{ overrides.logger.proxyURL }}
   {%- endif %}
+{% if overrides.get('logger', {}).get('tolerations', {})|length > 0 %}
+  {{ put_toleration(overrides.logger.tolerations) | indent(width=2) }}
+{% endif %}
+
 
 
 metrics:
+{% if overrides.get('metrics', {}).get('tolerations', {})|length > 0 %}
+  {{ put_toleration(overrides.metrics.tolerations) | indent(width=2) }}
+{% endif %}
   prometheus:
     {{ container_image(overrides.metrics.prometheus.image.url,overrides.metrics.prometheus.image.tag,overrides.metrics.prometheus.image.pullPolicy,) | indent( width=4)}}
   sdSidecar:
@@ -236,6 +260,9 @@ metrics:
   {%- endif %}
 
 connectAgent:
+{% if overrides.get('connectAgent', {}).get('tolerations', {})|length > 0 %}
+  {{ put_toleration(overrides.connectAgent.tolerations) | indent(width=2) }}
+{% endif %}
   replicaCountMax: {{ overrides.connectAgent.replicaCountMax }}
   replicaCountMin: {{ overrides.connectAgent.replicaCountMin }}
   serviceAccountRef: {{ svc_account(create_service_account, deployment_environment,'mart', overrides.mart.serviceAccountRef) | indent( width=2)}}
@@ -246,6 +273,9 @@ connectAgent:
       memory: {{ overrides.connectAgent.resources.requests.memory }}
 
 watcher:
+{% if overrides.get('watcher', {}).get('tolerations', {})|length > 0 %}
+  {{ put_toleration(overrides.watcher.tolerations) | indent(width=2) }}
+{% endif %}
   replicaCountMax: {{ overrides.watcher.replicaCountMax }}
   replicaCountMin: {{ overrides.watcher.replicaCountMin }}
   {{ container_image(overrides.watcher.image.url,overrides.watcher.image.tag,overrides.watcher.image.pullPolicy,) | indent( width=2)}}
@@ -256,6 +286,9 @@ watcher:
       memory: {{ overrides.watcher.resources.requests.memory }}
 
 redis:
+{% if overrides.get('redis', {}).get('tolerations', {})|length > 0 %}
+  {{ put_toleration(overrides.redis.tolerations) | indent(width=2) }}
+{% endif %}
   replicaCount: {{ overrides.redis.replicaCount }}
   {{ container_image(overrides.redis.image.url,overrides.redis.image.tag,overrides.redis.image.pullPolicy,) | indent( width=2)}}
   envoy:
@@ -270,6 +303,9 @@ redis:
       cpu: {{ overrides.redis.resources.requests.cpu }}
 
 ao:
+{% if overrides.get('ao', {}).get('tolerations', {})|length > 0 %}
+  {{ put_toleration(overrides.ao.tolerations) | indent(width=2) }}
+{% endif %}
   args:
     # This configuration is introduced in hybrid v1.8
     disableIstioConfigInAPIServer: true
@@ -286,3 +322,20 @@ ao:
 
 kubeRBACProxy:
   {{ container_image(overrides.kubeRBACProxy.image.url,overrides.kubeRBACProxy.image.tag,overrides.kubeRBACProxy.image.pullPolicy,) | indent( width=2)}}
+
+guardrails:
+{% if overrides.get('guardrails', {}).get('tolerations', {})|length > 0 %}
+  {{ put_toleration(overrides.guardrails.tolerations) | indent(width=2) }}
+{% endif %}
+
+
+apigeeIngressGateway:
+{% if overrides.get('apigeeIngressGateway', {}).get('tolerations', {})|length > 0 %}
+  {{ put_toleration(overrides.apigeeIngressGateway.tolerations) | indent(width=2) }}
+{% endif %}
+
+
+istiod:
+{% if overrides.get('istiod', {}).get('tolerations', {})|length > 0 %}
+  {{ put_toleration(overrides.istiod.tolerations) | indent(width=2) }}
+{% endif %}

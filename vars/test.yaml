@@ -250,6 +250,11 @@ overrides:
   # Apigee Cassandra.
   #
   cassandra:
+    tolerations:
+    - key: "nodepool"
+      operator: "Equal"
+      value: "apigee-data"
+      effect: "NoSchedule"
     hostNetwork: false
     auth:
       secret: ""
@@ -429,6 +434,11 @@ overrides:
           cpu: "500m"
   # Apigee Operators controller
   ao:
+    tolerations:
+    - key: "nodepool"
+      operator: "Equal"
+      value: "apigee-data"
+      effect: "NoSchedule"
     image:
       url: "gcr.io/apigee-release/hybrid/apigee-operators"
       tag: "1.15.0"
@@ -454,6 +464,12 @@ overrides:
 
   # Apigee istiod.
   istiod:
+    tolerations:
+    - key: "nodepool"
+      operator: "Equal"
+      value: "apigee-data"
+      effect: "NoSchedule"
+
     image:
       url: "gcr.io/apigee-release/hybrid/apigee-asm-istiod"
       tag: "1.18.7-asm.4-distroless"
@@ -469,6 +485,11 @@ overrides:
     accessLogFormat: '{"start_time":"%START_TIME%","remote_address":"%DOWNSTREAM_DIRECT_REMOTE_ADDRESS%","user_agent":"%REQ(USER-AGENT)%","host":"%REQ(:AUTHORITY)%","request":"%REQ(:METHOD)% %REQ(X-ENVOY-ORIGINAL-PATH?:PATH)% %PROTOCOL%","request_time":"%DURATION%","status":"%RESPONSE_CODE%","status_details":"%RESPONSE_CODE_DETAILS%","bytes_received":"%BYTES_RECEIVED%","bytes_sent":"%BYTES_SENT%","upstream_address":"%UPSTREAM_HOST%","upstream_response_flags":"%RESPONSE_FLAGS%","upstream_response_time":"%RESPONSE_DURATION%","upstream_service_time":"%RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)%","upstream_cluster":"%UPSTREAM_CLUSTER%","x_forwarded_for":"%REQ(X-FORWARDED-FOR)%","request_method":"%REQ(:METHOD)%","request_path":"%REQ(X-ENVOY-ORIGINAL-PATH?:PATH)%","request_protocol":"%PROTOCOL%","tls_protocol":"%DOWNSTREAM_TLS_VERSION%","request_id":"%REQ(X-REQUEST-ID)%","sni_host":"%REQUESTED_SERVER_NAME%","apigee_dynamic_data":"%DYNAMIC_METADATA(envoy.lua)%"}'
   # Apigee Ingressgateway.
   apigeeIngressGateway:
+    tolerations:
+    - key: "nodepool"
+      operator: "Equal"
+      value: "apigee-data"
+      effect: "NoSchedule"
     image:
       url: "gcr.io/apigee-release/hybrid/apigee-asm-ingress"
       tag: "1.18.7-asm.4-distroless"
@@ -482,3 +503,9 @@ overrides:
         memory: 128Mi
 
 ################################################Apigee Hybrid Helm Values ############
+  guardrails:
+    tolerations:
+    - key: "nodepool"
+      operator: "Equal"
+      value: "apigee-data"
+      effect: "NoSchedule"
