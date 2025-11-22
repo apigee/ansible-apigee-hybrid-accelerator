@@ -230,10 +230,6 @@ ansible-playbook known_issues.yaml
 Currently, a fix for the following issue is supported:
 -   [#416634326](https://cloud.google.com/apigee/docs/release/known-issues#416634326)
 
-## Limitations
-
-Refer to the [official documentation](https://cloud.google.com/apigee/docs/hybrid/preview/helm-install#limitations) for limitations.
-
 ## Contributing
 
 We welcome contributions from the community. Please see our [Contribution Guidelines](./CONTRIBUTING.md) for more information.
