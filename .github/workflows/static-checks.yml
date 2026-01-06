@@ -54,6 +54,7 @@ jobs:
           REPOSITORY_DEVSKIM_DISABLE_ERRORS: true
           TERRAFORM_TERRASCAN_DISABLE_ERRORS: true
           REPOSITORY_GRYPE_DISABLE_ERRORS: true
+          REPOSITORY_KINGFISHER_ARGUMENTS: "--redact --git-history=none --skip-validation"
 
   commit-messages:
     name: Conventional Commits Lint
