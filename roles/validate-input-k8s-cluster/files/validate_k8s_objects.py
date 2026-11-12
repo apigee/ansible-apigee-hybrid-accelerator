@@ -122,7 +122,7 @@ def get_roles(project_id):
 
 def get_sa_role(secret_name, namespace, bindings):
     secret = api_instance.read_namespaced_secret(secret_name, namespace)
-    print(secret.data)
+    print(f"secret {secret_name} fetched ({len(secret.data or {})} data keys)")  # noqa
     try:
         if secret.data is not None:
             decoded_data = base64.b64decode(secret.data['client_secret.json'])
