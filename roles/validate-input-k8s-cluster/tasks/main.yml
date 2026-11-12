@@ -27,15 +27,18 @@
         --create_service_account '{{ create_service_account }}' \
         --cassandra_storage_class '{{ custom_cassandra_storage_class }}'
       register: validate_k8s
+      # Script reads K8s Secrets containing GCP service-account keys; suppress
+      # result echo so credential material never reaches the Ansible/CI log.
+      no_log: true
 
     - name: Check validate kubernetes operation output
       debug:
-        msg: "{{ validate_k8s }}"
+        msg: "kubernetes validation rc={{ validate_k8s.rc }}"
 
   rescue:
     - name: Check validate kubernetes operation output
       debug:
-        msg: "{{ validate_k8s }}"
+        msg: "kubernetes validation rc={{ validate_k8s.rc | default('n/a') }} (failed; re-run with -vvv locally for details)"
 
     - name: Set Fail flag for control plane validation
       set_fact:

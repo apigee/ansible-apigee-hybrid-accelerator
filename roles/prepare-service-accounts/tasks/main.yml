@@ -24,6 +24,7 @@
       file:
         path: "{{ setup_path }}/service-accounts"
         state: directory
+        mode: '0700'
 
     - name: Generate svc_accounts_list
       set_fact:
@@ -102,6 +103,8 @@
           ansible.builtin.copy:
             content: "{{ sa_data.results | json_query(j_query) | first | b64decode }}"
             dest: "{{ setup_path }}/service-accounts/{{ overrides.gcp.projectID }}-{{ item }}.json"
+            mode: '0600'
+          no_log: true
           with_items: "{{ missing_svc_account_files }}"
           vars:
             j_query: "[?item=='{{ item }}'].resources[0].data.\"client_secret.json\""
