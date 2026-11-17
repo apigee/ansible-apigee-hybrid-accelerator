@@ -63,7 +63,16 @@
     cassandra_dc: dc-2
   tags:
     - dc2
+  pre_tasks:
+    - name: Validate cassandra storageClass name
+      ansible.builtin.assert:
+        that:
+          - overrides.cassandra.storage.storageClass is none or overrides.cassandra.storage.storageClass == "" or (overrides.cassandra.storage.storageClass is match('^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$'))
+        fail_msg: "Invalid overrides.cassandra.storage.storageClass value"
+      when: overrides.cassandra.storage.storageClass is defined
+      tags: ['ds-decomm']
   roles:
+    - { role: validate-input, tags: ['validate-input'] }
     - { role: prepare-helm, tags: ['prepare-helm'] }
     - { role: apigee-hybrid-overrides, tags: ['generate-overrides'] }
     - { role: helm-ops, vars: { release_name: '{{ overrides.gcp.projectID }}', chart_ref: 'apigee-org', release_state: absent }, tags: ['apigeeorg', 'apigeeorgs'] }
@@ -129,7 +138,16 @@
     cassandra_dc: dc-1
   tags:
     - dc1
+  pre_tasks:
+    - name: Validate cassandra storageClass name
+      ansible.builtin.assert:
+        that:
+          - overrides.cassandra.storage.storageClass is none or overrides.cassandra.storage.storageClass == "" or (overrides.cassandra.storage.storageClass is match('^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$'))
+        fail_msg: "Invalid overrides.cassandra.storage.storageClass value"
+      when: overrides.cassandra.storage.storageClass is defined
+      tags: ['ds-decomm']
   roles:
+    - { role: validate-input, tags: ['validate-input'] }
     - { role: prepare-helm, tags: ['prepare-helm'] }
     - { role: apigee-hybrid-overrides, tags: ['generate-overrides'] }
     - { role: helm-ops, vars: { release_name: '{{ overrides.gcp.projectID }}', chart_ref: 'apigee-org', release_state: absent }, tags: ['apigeeorg', 'apigeeorgs'] }

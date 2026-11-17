@@ -27,18 +27,39 @@
     check_ns_flag: "{{ true if check_ns_data.resources| length > 0 else false }}"
   when: "check_ns|length > 0"
 
+- name: Validate kubectl resource name is not a flag
+  ansible.builtin.fail:
+    msg: "k8s_resource must not start with '-'"
+  when: "not check_ns_flag and (k8s_resource | default('', true) | string) is match('^-')"
+
 - block:
     - name: kubectl {{operation}}
-      shell: >
-        kubectl {{ operation }} {{ k8s_resource_type }} {{ k8s_resource }} \
-          -n {{ k8s_namespace }} \
+      ansible.builtin.command:
+        cmd: >-
+          kubectl {{ operation | quote }}
+          {% if (k8s_resource_type | default('', true) | length) > 0 %}{{ k8s_resource_type | quote }}{% endif %}
+          {% if (k8s_resource | default('', true) | length) > 0 %}{{ k8s_resource | quote }}{% endif %}
+          -n {{ k8s_namespace | quote }}
           {{ kubectl_args }}
       register: kubectl_op
+      no_log: "{{ (output_file | default('', true) | length > 0) or (k8s_resource_type == 'secret') }}"
       when: "not check_ns_flag"
+
+    - name: write kubectl output to {{ output_file }}
+      ansible.builtin.copy:
+        content: "{{ kubectl_op.stdout }}"
+        dest: "{{ output_file }}"
+        mode: '0600'
+      no_log: true
+      when: "not check_ns_flag and (output_file | default('', true) | length) > 0"
 
     - debug:
         msg: "{{ kubectl_op }}"
-      when: "not check_ns_flag"
+      when: "not check_ns_flag and (output_file | default('', true) | length) == 0 and k8s_resource_type != 'secret'"
+
+    - debug:
+        msg: "kubectl {{ operation }} completed (rc={{ kubectl_op.rc | default('n/a') }})"
+      when: "not check_ns_flag and ((output_file | default('', true) | length) > 0 or k8s_resource_type == 'secret')"
   rescue:
     - debug:
         msg: "kubectl {{ operation }} failed"

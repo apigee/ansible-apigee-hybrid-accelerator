@@ -17,5 +17,6 @@ k8s_namespace: default
 k8s_resource_type: ''
 k8s_resource: ''
 kubectl_args: ''
+output_file: ''
 check_ns: ''
 check_ns_flag: false
