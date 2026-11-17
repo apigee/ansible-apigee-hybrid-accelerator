@@ -112,15 +112,22 @@
     cassandra_dc: dc-2
   tags:
     - dc2
+  pre_tasks:
+    - name: Ensure dc2-prereq directory exists with restricted permissions
+      ansible.builtin.file:
+        path: "{{ setup_path }}/dc2-prereq"
+        state: directory
+        mode: '0700'
+      tags: ['dc2-prereq']
   roles:
     - { role: validate-input, tags: ['validate-input'] }
     - { role: validate-input-apigee-control-plane, tags: ['validate-input', 'validate-input-apigee'] }
     - { role: validate-input-k8s-cluster, vars: { custom_cassandra_storage_class: '{{ overrides.cassandra.storage.storageClass }}' }, tags: ['validate-input', 'validate-input-k8s'] }
     - { role: cert-manager, tags: ['cert-manager'] }
-    - { role: kubectl-ops, vars: { operation: get, k8s_resource_type: namespace, k8s_resource: apigee, kubectl_args: '--kubeconfig {{ kubeconfigs.primary }} -o yaml > {{ setup_path }}/apigee-namespace.yaml'}, tags: ['dc2-prereq'] }
-    - { role: kubectl-ops, vars: { operation: get, k8s_resource_type: secret, k8s_resource: apigee-ca, k8s_namespace: cert-manager, kubectl_args: '--kubeconfig {{ kubeconfigs.primary }} -o yaml > {{ setup_path }}/apigee-ca.yaml'}, tags: ['dc2-prereq'] }
-    - { role: kubectl-ops, vars: { operation: apply, check_ns: apigee, kubectl_args: '-f {{ setup_path }}/apigee-namespace.yaml'} }
-    - { role: kubectl-ops, vars: { operation: apply, k8s_namespace: cert-manager, kubectl_args: '-f {{ setup_path }}/apigee-ca.yaml'} }
+    - { role: kubectl-ops, vars: { operation: get, k8s_resource_type: namespace, k8s_resource: apigee, kubectl_args: '--kubeconfig {{ kubeconfigs.primary }} -o yaml', output_file: '{{ setup_path }}/dc2-prereq/apigee-namespace.yaml'}, tags: ['dc2-prereq'] }
+    - { role: kubectl-ops, vars: { operation: get, k8s_resource_type: secret, k8s_resource: apigee-ca, k8s_namespace: cert-manager, kubectl_args: '--kubeconfig {{ kubeconfigs.primary }} -o yaml', output_file: '{{ setup_path }}/dc2-prereq/apigee-ca.yaml'}, tags: ['dc2-prereq'] }
+    - { role: kubectl-ops, vars: { operation: apply, check_ns: apigee, kubectl_args: '-f {{ setup_path }}/dc2-prereq/apigee-namespace.yaml'} }
+    - { role: kubectl-ops, vars: { operation: apply, k8s_namespace: cert-manager, kubectl_args: '-f {{ setup_path }}/dc2-prereq/apigee-ca.yaml'} }
     - { role: certificates, vars: { generate_certificates: false, clone_certificates: true, kubeconfig: "{{ kubeconfigs.primary }}"}, tags: ['certs'] }
     - { role: prepare-helm, tags: ['prepare-helm'] }
     - { role: prepare-service-accounts, vars: { clone_secret: true, kubeconfig: "{{ kubeconfigs.primary }}" }, tags: ['prepare-service-accounts'] }
@@ -144,6 +151,11 @@
     - { role: helm-ops, vars: { disable_hook: '{{ disable_hooks.organization}}', release_name: '{{ overrides.gcp.projectID }}', chart_ref: 'apigee-org' }, tags: ['apigeeorg', 'apigeeorgs'] }
 
   tasks:
+    - name: Remove temporary CA secret file after apply
+      ansible.builtin.file:
+        path: "{{ setup_path }}/dc2-prereq/apigee-ca.yaml"
+        state: absent
+
     - name: deploy environment
       include_role: { name: helm-ops, apply: { tags: apigeeenv } }
       vars:

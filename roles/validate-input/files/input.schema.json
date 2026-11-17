@@ -490,7 +490,8 @@
               "type": "object",
               "properties": {
                 "storageClass": {
-                  "type": ["string", "null"] 
+                  "type": ["string", "null"],
+                  "pattern": "^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*)?$"
                 },
                 "storageClassProperties": {
                   "type": "object",

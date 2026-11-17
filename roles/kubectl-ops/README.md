@@ -7,10 +7,12 @@ Requirements
 ------------
 
 This role uses the below ansible modules
+* [command_module](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/command_module.html)
+* [copy_module](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/copy_module.html)
 * [debug_module](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/debug_module.html)
+* [fail_module](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/fail_module.html)
 * [set_fact_module](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/set_fact_module.html)
 * [k8s_info_module](https://docs.ansible.com/ansible/latest/collections/kubernetes/core/k8s_info_module.html)
-* [shell_module](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/shell_module.html)
 
 
 Role Variables
@@ -22,6 +24,7 @@ k8s_namespace: default
 k8s_resource_type: ''
 k8s_resource: ''
 kubectl_args: ''
+output_file: ''
 check_ns: ''
 check_ns_flag: false
 ```
@@ -38,7 +41,7 @@ Below is an example of the usage of the role
 
     - hosts: localhost
       roles:
-        - { role: kubectl-ops, vars: { operation: get, k8s_resource_type: namespace, k8s_resource: apigee, kubectl_args: '--kubeconfig {{ kubeconfigs.primary }} -o yaml > {{ setup_path }}/apigee-namespace.yaml'}, tags: ['dc2-prereq'] }
+        - { role: kubectl-ops, vars: { operation: get, k8s_resource_type: namespace, k8s_resource: apigee, kubectl_args: '--kubeconfig {{ kubeconfigs.primary }} -o yaml', output_file: '{{ setup_path }}/dc2-prereq/apigee-namespace.yaml'}, tags: ['dc2-prereq'] }
 
 
 License
